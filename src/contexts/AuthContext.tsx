@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import type { User, Session } from "@supabase/supabase-js";
 
 export interface AuthUser {
   id: string;
@@ -12,11 +11,10 @@ export interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null;
-  session: Session | null;
   loading: boolean;
   signUp: (email: string, username: string, password: string) => Promise<{ error: string | null }>;
   signIn: (username: string, password: string) => Promise<{ error: string | null }>;
-  signOut: () => Promise<void>;
+  signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,52 +27,23 @@ function checkRoles(username: string) {
   };
 }
 
+const STORAGE_KEY = "hd_current_user";
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadUser = async (session: Session | null) => {
-    if (!session?.user) {
-      setUser(null);
-      setSession(null);
-      setLoading(false);
-      return;
-    }
-
-    setSession(session);
-
-    const { data } = await supabase
-      .from("usuarios")
-      .select("username")
-      .eq("user_id", session.user.id)
-      .single();
-
-    const username = data?.username ?? session.user.email ?? "";
-    const roles = checkRoles(username);
-
-    setUser({
-      id: session.user.id,
-      email: session.user.email ?? "",
-      username,
-      ...roles,
-    });
-
-    setLoading(false);
-  };
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      loadUser(session);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        loadUser(session);
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as AuthUser;
+        setUser({ ...parsed, ...checkRoles(parsed.username) });
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
       }
-    );
-
-    return () => subscription.unsubscribe();
+    }
+    setLoading(false);
   }, []);
 
   const signUp = async (email: string, username: string, password: string): Promise<{ error: string | null }> => {
@@ -82,22 +51,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .from("usuarios")
       .select("id")
       .eq("username", username)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return { error: "Nome de usuario ja existe" };
     }
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { username },
-      },
-    });
+    const { error } = await supabase
+      .from("usuarios")
+      .insert({ email, username, senha: password });
 
     if (error) {
-      return { error: error.message };
+      return { error: "Erro ao cadastrar" };
+    }
+
+    const { data: newUser } = await supabase
+      .from("usuarios")
+      .select("id, email, username")
+      .eq("username", username)
+      .single();
+
+    if (newUser) {
+      const authUser: AuthUser = {
+        id: newUser.id,
+        email: newUser.email,
+        username: newUser.username,
+        ...checkRoles(newUser.username),
+      };
+      setUser(authUser);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
     }
 
     return { error: null };
@@ -106,34 +88,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (username: string, password: string): Promise<{ error: string | null }> => {
     const { data: usuario, error: lookupError } = await supabase
       .from("usuarios")
-      .select("email")
+      .select("id, email, username, senha")
       .eq("username", username)
-      .single();
+      .maybeSingle();
 
     if (lookupError || !usuario) {
       return { error: "Usuario nao encontrado" };
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: usuario.email,
-      password,
-    });
-
-    if (error) {
+    if (usuario.senha !== password) {
       return { error: "Senha incorreta" };
     }
+
+    const authUser: AuthUser = {
+      id: usuario.id,
+      email: usuario.email,
+      username: usuario.username,
+      ...checkRoles(usuario.username),
+    };
+
+    setUser(authUser);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
 
     return { error: null };
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const signOut = () => {
     setUser(null);
-    setSession(null);
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

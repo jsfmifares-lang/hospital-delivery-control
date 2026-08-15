@@ -30,7 +30,7 @@ export function NovaSolicitacao() {
       hospital_id: selectedHospital.id,
       nome_hospital: selectedHospital.nome,
       nome_paciente: nomePaciente || undefined,
-      created_by: user?.email || "Desconhecido",
+      created_by: user?.username || "Desconhecido",
     });
 
     setSearch("");

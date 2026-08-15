@@ -26,8 +26,8 @@ export function RegisterPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres");
+    if (password.length < 4) {
+      setError("A senha deve ter pelo menos 4 caracteres");
       return;
     }
 
@@ -95,7 +95,7 @@ export function RegisterPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Minimo 6 caracteres"
+                placeholder="Minimo 4 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
