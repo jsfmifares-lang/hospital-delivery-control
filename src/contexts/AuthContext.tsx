@@ -1,11 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import type { User, Session, AuthError } from "@supabase/supabase-js";
+import type { User, Session } from "@supabase/supabase-js";
 
 export interface AuthUser {
   id: string;
   email: string;
   username: string;
+  isAdmin: boolean;
   isAnderson: boolean;
 }
 
@@ -19,6 +20,14 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function checkRoles(username: string) {
+  const lower = username.toLowerCase();
+  return {
+    isAdmin: lower.includes("adm"),
+    isAnderson: lower === "anderson",
+  };
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -41,21 +50,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq("user_id", session.user.id)
       .single();
 
-    if (data) {
-      setUser({
-        id: session.user.id,
-        email: session.user.email ?? "",
-        username: data.username,
-        isAnderson: data.username.toLowerCase() === "anderson",
-      });
-    } else {
-      setUser({
-        id: session.user.id,
-        email: session.user.email ?? "",
-        username: session.user.email ?? "",
-        isAnderson: false,
-      });
-    }
+    const username = data?.username ?? session.user.email ?? "";
+    const roles = checkRoles(username);
+
+    setUser({
+      id: session.user.id,
+      email: session.user.email ?? "",
+      username,
+      ...roles,
+    });
 
     setLoading(false);
   };

@@ -4,7 +4,9 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/layouts/AppLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
+import { NovaSolicitacao } from "@/pages/NovaSolicitacao";
 import { MonitorEntregas } from "@/pages/MonitorEntregas";
+import { HospitaisPage } from "@/pages/HospitaisPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +53,16 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+
+  if (!user?.isAdmin) {
+    return <Navigate to="/monitor" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -77,7 +89,23 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
+        <Route
+          path="/"
+          element={
+            <AdminRoute>
+              <NovaSolicitacao />
+            </AdminRoute>
+          }
+        />
         <Route path="/monitor" element={<MonitorEntregas />} />
+        <Route
+          path="/hospitais"
+          element={
+            <AdminRoute>
+              <HospitaisPage />
+            </AdminRoute>
+          }
+        />
       </Route>
       <Route path="*" element={<Navigate to="/monitor" replace />} />
     </Routes>
