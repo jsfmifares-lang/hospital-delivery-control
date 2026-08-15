@@ -7,20 +7,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 
-export function LoginPage() {
+export function RegisterPage() {
+  const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("As senhas nao conferem");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+
     setLoading(true);
 
-    const { error } = await signIn(username, password);
+    const { error } = await signUp(email, username, password);
 
     if (error) {
       setError(error);
@@ -41,8 +54,8 @@ export function LoginPage() {
             </div>
           </div>
           <div>
-            <CardTitle className="text-xl">Hospital Delivery Control</CardTitle>
-            <CardDescription>Faca login para acessar o sistema</CardDescription>
+            <CardTitle className="text-xl">Criar Conta</CardTitle>
+            <CardDescription>Preencha seus dados para se cadastrar</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -54,11 +67,23 @@ export function LoginPage() {
             )}
 
             <div className="space-y-2">
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="username">Nome de usuario</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Seu nome de usuario"
+                placeholder="Escolha um nome de usuario"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -70,9 +95,21 @@ export function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Sua senha"
+                placeholder="Minimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar senha</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Repita a senha"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </div>
@@ -81,17 +118,17 @@ export function LoginPage() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Entrando...
+                  Cadastrando...
                 </>
               ) : (
-                "Entrar"
+                "Cadastrar"
               )}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Nao tem conta?{" "}
-              <Link to="/cadastro" className="text-primary hover:underline font-medium">
-                Cadastre-se
+              Ja tem conta?{" "}
+              <Link to="/login" className="text-primary hover:underline font-medium">
+                Faca login
               </Link>
             </p>
           </form>

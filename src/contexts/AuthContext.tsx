@@ -2,17 +2,19 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { User, Session, AuthError } from "@supabase/supabase-js";
 
-export type UserRole = "admin" | "operador";
-
-export interface AuthUser extends User {
-  role: UserRole;
+export interface AuthUser {
+  id: string;
+  email: string;
+  username: string;
+  isAnderson: boolean;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, username: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (username: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -23,37 +25,102 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const loadUser = async (session: Session | null) => {
+    if (!session?.user) {
+      setUser(null);
+      setSession(null);
+      setLoading(false);
+      return;
+    }
+
+    setSession(session);
+
+    const { data } = await supabase
+      .from("usuarios")
+      .select("username")
+      .eq("user_id", session.user.id)
+      .single();
+
+    if (data) {
+      setUser({
+        id: session.user.id,
+        email: session.user.email ?? "",
+        username: data.username,
+        isAnderson: data.username.toLowerCase() === "anderson",
+      });
+    } else {
+      setUser({
+        id: session.user.id,
+        email: session.user.email ?? "",
+        username: session.user.email ?? "",
+        isAnderson: false,
+      });
+    }
+
+    setLoading(false);
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ? formatUser(session.user) : null);
-      setLoading(false);
+      loadUser(session);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setSession(session);
-        setUser(session?.user ? formatUser(session.user) : null);
-        setLoading(false);
+        loadUser(session);
       }
     );
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const formatUser = (u: User): AuthUser => {
-    const meta = u.user_metadata as Record<string, unknown> | undefined;
-    const rawRole = typeof meta?.role === "string" ? meta.role : "operador";
-    const role: UserRole = rawRole === "admin" ? "admin" : "operador";
-    return { ...u, role };
-  };
+  const signUp = async (email: string, username: string, password: string): Promise<{ error: string | null }> => {
+    const { data: existing } = await supabase
+      .from("usuarios")
+      .select("id")
+      .eq("username", username)
+      .single();
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    if (existing) {
+      return { error: "Nome de usuario ja existe" };
+    }
+
+    const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: { username },
+      },
     });
-    return { error };
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { error: null };
+  };
+
+  const signIn = async (username: string, password: string): Promise<{ error: string | null }> => {
+    const { data: usuario, error: lookupError } = await supabase
+      .from("usuarios")
+      .select("email")
+      .eq("username", username)
+      .single();
+
+    if (lookupError || !usuario) {
+      return { error: "Usuario nao encontrado" };
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: usuario.email,
+      password,
+    });
+
+    if (error) {
+      return { error: "Senha incorreta" };
+    }
+
+    return { error: null };
   };
 
   const signOut = async () => {
@@ -63,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

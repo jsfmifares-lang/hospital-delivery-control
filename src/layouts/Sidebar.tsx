@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
-  Plus,
   Monitor,
-  Building2,
   Menu,
   X,
   Truck,
@@ -14,27 +12,6 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
-const navItems = [
-  {
-    to: "/",
-    label: "Nova Solicitacao",
-    icon: Plus,
-    roles: ["admin"] as const,
-  },
-  {
-    to: "/monitor",
-    label: "Monitor de Entregas",
-    icon: Monitor,
-    roles: ["operador"] as const,
-  },
-  {
-    to: "/hospitais",
-    label: "Hospitais",
-    icon: Building2,
-    roles: ["admin"] as const,
-  },
-];
-
 interface SidebarProps {
   className?: string;
 }
@@ -43,10 +20,6 @@ export function Sidebar({ className }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(false);
   const { user, signOut } = useAuth();
-
-  const filteredNav = navItems.filter((item) =>
-    item.roles.includes(user?.role ?? "operador")
-  );
 
   return (
     <>
@@ -80,32 +53,31 @@ export function Sidebar({ className }: SidebarProps) {
         )}
       >
         <nav className="flex-1 space-y-1">
-          {filteredNav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )
-              }
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </NavLink>
-          ))}
+          <NavLink
+            to="/monitor"
+            onClick={() => setMobileOpen(false)}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )
+            }
+          >
+            <Monitor className="h-4 w-4" />
+            Monitor de Entregas
+          </NavLink>
         </nav>
 
         <div className="border-t pt-3 mt-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
-            <span className="text-[10px] font-medium uppercase bg-muted px-1.5 py-0.5 rounded">
-              {user?.role}
-            </span>
+            <span className="text-xs text-muted-foreground truncate">{user?.username}</span>
+            {user?.isAnderson && (
+              <span className="text-[10px] font-medium uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                Editor
+              </span>
+            )}
           </div>
           <Button variant="ghost" size="sm" className="w-full justify-start text-destructive" onClick={signOut}>
             <LogOut className="mr-2 h-4 w-4" />
@@ -147,33 +119,31 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
 
         <nav className="flex-1 space-y-1 p-4">
-          {filteredNav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              onClick={() => setDesktopOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )
-              }
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </NavLink>
-          ))}
+          <NavLink
+            to="/monitor"
+            onClick={() => setDesktopOpen(false)}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )
+            }
+          >
+            <Monitor className="h-4 w-4" />
+            Monitor de Entregas
+          </NavLink>
         </nav>
 
         <div className="border-t p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground truncate max-w-[140px]">{user?.email}</span>
-            <span className="text-[10px] font-medium uppercase bg-muted px-1.5 py-0.5 rounded">
-              {user?.role}
-            </span>
+            <span className="text-xs text-muted-foreground truncate max-w-[140px]">{user?.username}</span>
+            {user?.isAnderson && (
+              <span className="text-[10px] font-medium uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                Editor
+              </span>
+            )}
           </div>
           <Button variant="ghost" size="sm" className="w-full justify-start text-destructive" onClick={signOut}>
             <LogOut className="mr-2 h-4 w-4" />

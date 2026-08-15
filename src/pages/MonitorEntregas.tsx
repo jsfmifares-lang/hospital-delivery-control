@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useEntregas, useUpdateEntregaStatus } from "@/hooks/useQueries";
+import { useAuth } from "@/hooks/useAuth";
 import type { Entrega, StatusEntrega } from "@/types";
 
 export function MonitorEntregas() {
@@ -27,8 +28,12 @@ export function MonitorEntregas() {
 
   const { data: entregas = [], isLoading, refetch } = useEntregas();
   const updateStatus = useUpdateEntregaStatus();
+  const { user } = useAuth();
+
+  const canEdit = user?.isAnderson ?? false;
 
   const handleRowClick = (entrega: Entrega) => {
+    if (!canEdit) return;
     setSelectedEntrega(entrega);
     setNewStatus(entrega.status);
   };
@@ -102,7 +107,14 @@ export function MonitorEntregas() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Entregas</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Entregas</CardTitle>
+            {!canEdit && (
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                Somente visualizacao
+              </span>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading && sortedEntregas.length === 0 ? (
@@ -114,9 +126,6 @@ export function MonitorEntregas() {
               <Monitor className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <p className="text-muted-foreground">
                 Nenhuma entrega registrada ainda
-              </p>
-              <p className="text-sm text-muted-foreground/70">
-                Crie uma nova solicitacao para comecar
               </p>
             </div>
           ) : (
@@ -145,7 +154,11 @@ export function MonitorEntregas() {
                   {sortedEntregas.map((entrega) => (
                     <div
                       key={entrega.id}
-                      className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr] gap-4 items-center rounded-lg p-3 hover:bg-muted/50 cursor-pointer transition-colors"
+                      className={`grid grid-cols-[1fr_1fr_1fr_1fr_1fr] gap-4 items-center rounded-lg p-3 transition-colors ${
+                        canEdit
+                          ? "hover:bg-muted/50 cursor-pointer"
+                          : "cursor-default"
+                      }`}
                       onClick={() => handleRowClick(entrega)}
                     >
                       <span className="font-medium truncate">
@@ -171,7 +184,11 @@ export function MonitorEntregas() {
                 {sortedEntregas.map((entrega) => (
                   <div
                     key={entrega.id}
-                    className="rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                    className={`rounded-lg border p-4 transition-colors ${
+                      canEdit
+                        ? "hover:bg-muted/50 cursor-pointer"
+                        : "cursor-default"
+                    }`}
                     onClick={() => handleRowClick(entrega)}
                   >
                     <div className="flex items-start justify-between mb-2">
@@ -197,54 +214,56 @@ export function MonitorEntregas() {
         </CardContent>
       </Card>
 
-      {/* Status Update Dialog */}
-      <Dialog
-        open={!!selectedEntrega}
-        onOpenChange={(open) => !open && setSelectedEntrega(null)}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Atualizar Status</DialogTitle>
-            <DialogDescription>
-              {selectedEntrega?.nome_hospital}
-              {selectedEntrega?.nome_paciente && ` — ${selectedEntrega.nome_paciente}`}
-            </DialogDescription>
-          </DialogHeader>
+      {/* Status Update Dialog - only for Anderson */}
+      {canEdit && (
+        <Dialog
+          open={!!selectedEntrega}
+          onOpenChange={(open) => !open && setSelectedEntrega(null)}
+        >
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Atualizar Status</DialogTitle>
+              <DialogDescription>
+                {selectedEntrega?.nome_hospital}
+                {selectedEntrega?.nome_paciente && ` — ${selectedEntrega.nome_paciente}`}
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select
-                value={newStatus}
-                onValueChange={(v) => setNewStatus(v as StatusEntrega)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Pendente">Pendente</SelectItem>
-                  <SelectItem value="Saiu para entrega">
-                    Saiu para entrega
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <Select
+                  value={newStatus}
+                  onValueChange={(v) => setNewStatus(v as StatusEntrega)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Pendente">Pendente</SelectItem>
+                    <SelectItem value="Saiu para entrega">
+                      Saiu para entrega
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setSelectedEntrega(null)}
-              disabled={updateStatus.isPending}
-            >
-              Cancelar
-            </Button>
-            <Button onClick={handleSave} disabled={updateStatus.isPending}>
-              {updateStatus.isPending ? "Salvando..." : "Salvar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setSelectedEntrega(null)}
+                disabled={updateStatus.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleSave} disabled={updateStatus.isPending}>
+                {updateStatus.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

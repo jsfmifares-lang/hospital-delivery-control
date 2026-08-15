@@ -3,10 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/layouts/AppLayout";
 import { LoginPage } from "@/pages/LoginPage";
-import { NovaSolicitacao } from "@/pages/NovaSolicitacao";
+import { RegisterPage } from "@/pages/RegisterPage";
 import { MonitorEntregas } from "@/pages/MonitorEntregas";
-import { HospitaisPage } from "@/pages/HospitaisPage";
-import type { UserRole } from "@/contexts/AuthContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,13 +15,7 @@ const queryClient = new QueryClient({
   },
 });
 
-function ProtectedRoute({
-  children,
-  allowedRoles,
-}: {
-  children: React.ReactNode;
-  allowedRoles?: UserRole[];
-}) {
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -36,13 +28,6 @@ function ProtectedRoute({
 
   if (!user) {
     return <Navigate to="/login" replace />;
-  }
-
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    if (user.role === "operador") {
-      return <Navigate to="/monitor" replace />;
-    }
-    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -60,10 +45,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (user) {
-    if (user.role === "operador") {
-      return <Navigate to="/monitor" replace />;
-    }
-    return <Navigate to="/" replace />;
+    return <Navigate to="/monitor" replace />;
   }
 
   return <>{children}</>;
@@ -81,38 +63,23 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/cadastro"
+        element={
+          <PublicRoute>
+            <RegisterPage />
+          </PublicRoute>
+        }
+      />
+      <Route
         element={
           <ProtectedRoute>
             <AppLayout />
           </ProtectedRoute>
         }
       >
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <NovaSolicitacao />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/monitor"
-          element={
-            <ProtectedRoute allowedRoles={["operador"]}>
-              <MonitorEntregas />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/hospitais"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <HospitaisPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/monitor" element={<MonitorEntregas />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/monitor" replace />} />
     </Routes>
   );
 }
