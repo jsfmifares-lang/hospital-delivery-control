@@ -247,8 +247,9 @@ export function HospitaisPage() {
               <Input
                 id="nome"
                 value={form.nome}
-                onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                placeholder="Ex: Hospital Santa Joana"
+                onChange={(e) => setForm({ ...form, nome: e.target.value.toUpperCase() })}
+                placeholder="EX: HOSPITAL SANTA JOANA"
+                style={{ textTransform: "uppercase" }}
               />
             </div>
             <div className="space-y-2">
@@ -256,8 +257,9 @@ export function HospitaisPage() {
               <Input
                 id="cidade"
                 value={form.cidade}
-                onChange={(e) => setForm({ ...form, cidade: e.target.value })}
-                placeholder="Ex: Recife"
+                onChange={(e) => setForm({ ...form, cidade: e.target.value.toUpperCase() })}
+                placeholder="EX: RECIFE"
+                style={{ textTransform: "uppercase" }}
               />
             </div>
             <div className="space-y-2">
@@ -266,9 +268,10 @@ export function HospitaisPage() {
                 id="observacao"
                 value={form.observacao}
                 onChange={(e) =>
-                  setForm({ ...form, observacao: e.target.value })
+                  setForm({ ...form, observacao: e.target.value.toUpperCase() })
                 }
-                placeholder="Observações adicionais..."
+                placeholder="OBSERVACOES ADICIONAIS..."
+                style={{ textTransform: "uppercase" }}
                 rows={3}
               />
             </div>

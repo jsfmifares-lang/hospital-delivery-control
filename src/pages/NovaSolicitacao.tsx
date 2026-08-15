@@ -75,8 +75,9 @@ export function NovaSolicitacao() {
             <Input
               id="paciente"
               value={nomePaciente}
-              onChange={(e) => setNomePaciente(e.target.value)}
-              placeholder="Ex: Joao da Silva"
+              onChange={(e) => setNomePaciente(e.target.value.toUpperCase())}
+              placeholder="EX: JOAO DA SILVA"
+              style={{ textTransform: "uppercase" }}
             />
           </div>
 

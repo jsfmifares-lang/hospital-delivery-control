@@ -30,7 +30,7 @@ export function MonitorEntregas() {
   const updateStatus = useUpdateEntregaStatus();
   const { user } = useAuth();
 
-  const canEdit = user?.isAnderson ?? false;
+  const canEdit = user?.isAdmin || user?.isAnderson;
 
   const handleRowClick = (entrega: Entrega) => {
     if (!canEdit) return;
@@ -84,11 +84,11 @@ export function MonitorEntregas() {
             <Monitor className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
               Monitor de Entregas
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Acompanhe o status de todas as entregas em tempo real
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Acompanhe o status das entregas em tempo real
             </p>
           </div>
         </div>
@@ -99,9 +99,9 @@ export function MonitorEntregas() {
           disabled={isLoading}
         >
           <RefreshCw
-            className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            className={`mr-1 sm:mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
           />
-          Atualizar
+          <span className="hidden sm:inline">Atualizar</span>
         </Button>
       </div>
 
@@ -109,11 +109,6 @@ export function MonitorEntregas() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Entregas</CardTitle>
-            {!canEdit && (
-              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                Somente visualizacao
-              </span>
-            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -131,49 +126,60 @@ export function MonitorEntregas() {
           ) : (
             <>
               {/* Desktop Table */}
-              <div className="hidden md:block">
-                <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr] gap-4 border-b pb-3 mb-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Hospital
-                  </span>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Paciente
-                  </span>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Status
-                  </span>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Inserido por
-                  </span>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Data/Hora
-                  </span>
-                </div>
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b pb-3 mb-2">
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Hospital</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Paciente</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Status</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Inserido por</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3">Data/Hora</th>
+                    </tr>
+                  </thead>
+                  <tbody className="space-y-1">
+                    {sortedEntregas.map((entrega) => (
+                      <tr
+                        key={entrega.id}
+                        className={`rounded-lg transition-colors ${
+                          canEdit
+                            ? "hover:bg-muted/50 cursor-pointer"
+                            : "cursor-default"
+                        }`}
+                        onClick={() => handleRowClick(entrega)}
+                      >
+                        <td className="font-medium py-3 pr-4 whitespace-nowrap">{entrega.nome_hospital}</td>
+                        <td className="text-sm text-muted-foreground py-3 pr-4 whitespace-nowrap">{entrega.nome_paciente || "—"}</td>
+                        <td className="py-3 pr-4"><StatusBadge status={entrega.status} /></td>
+                        <td className="text-sm text-muted-foreground py-3 pr-4 whitespace-nowrap">{entrega.created_by || "—"}</td>
+                        <td className="text-sm text-muted-foreground py-3 whitespace-nowrap">{formatDate(entrega.created_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
+              {/* Tablet - 3 columns */}
+              <div className="hidden md:block lg:hidden">
                 <div className="space-y-1">
                   {sortedEntregas.map((entrega) => (
                     <div
                       key={entrega.id}
-                      className={`grid grid-cols-[1fr_1fr_1fr_1fr_1fr] gap-4 items-center rounded-lg p-3 transition-colors ${
+                      className={`grid grid-cols-[1fr_auto_auto] gap-3 items-center rounded-lg p-3 transition-colors ${
                         canEdit
                           ? "hover:bg-muted/50 cursor-pointer"
                           : "cursor-default"
                       }`}
                       onClick={() => handleRowClick(entrega)}
                     >
-                      <span className="font-medium truncate">
-                        {entrega.nome_hospital}
-                      </span>
-                      <span className="text-sm text-muted-foreground truncate">
-                        {entrega.nome_paciente || "—"}
-                      </span>
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{entrega.nome_hospital}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {entrega.nome_paciente || "—"} · {entrega.created_by || "—"}
+                        </p>
+                      </div>
                       <StatusBadge status={entrega.status} />
-                      <span className="text-sm text-muted-foreground truncate">
-                        {entrega.created_by || "—"}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {formatDate(entrega.created_at)}
-                      </span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(entrega.created_at)}</span>
                     </div>
                   ))}
                 </div>
@@ -192,16 +198,14 @@ export function MonitorEntregas() {
                     onClick={() => handleRowClick(entrega)}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div className="space-y-1">
-                        <p className="font-medium">{entrega.nome_hospital}</p>
-                        {entrega.nome_paciente && (
-                          <p className="text-sm text-muted-foreground">
-                            Paciente: {entrega.nome_paciente}
-                          </p>
-                        )}
-                      </div>
+                      <p className="font-medium pr-2">{entrega.nome_hospital}</p>
                       <StatusBadge status={entrega.status} />
                     </div>
+                    {entrega.nome_paciente && (
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Paciente: {entrega.nome_paciente}
+                      </p>
+                    )}
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>Por: {entrega.created_by || "—"}</span>
                       <span>{formatDate(entrega.created_at)}</span>
@@ -214,7 +218,7 @@ export function MonitorEntregas() {
         </CardContent>
       </Card>
 
-      {/* Status Update Dialog - only for Anderson */}
+      {/* Status Update Dialog */}
       {canEdit && (
         <Dialog
           open={!!selectedEntrega}
