@@ -7,6 +7,7 @@ import {
   Menu,
   X,
   Truck,
+  ChevronRight,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -122,71 +123,80 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
       </div>
 
-      {/* Desktop - Hover Trigger Zone */}
+      {/* Desktop - Trigger Tab + Sidebar container */}
       <div
-        className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-[59] lg:w-3"
-        onMouseEnter={handleMouseEnter}
-      />
-
-      {/* Desktop Sidebar */}
-      <aside
-        className={cn(
-          "hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:flex lg:w-64 lg:flex-col border-r bg-background transition-transform duration-300 ease-in-out",
-          desktopOpen ? "translate-x-0" : "-translate-x-full",
-          className
-        )}
+        className="hidden lg:flex lg:fixed lg:inset-y-0 lg:left-0 lg:z-50"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="flex h-14 items-center gap-2 border-b px-6">
-          <Truck className="h-5 w-5 text-primary" />
-          <span className="font-semibold text-sm">Hospital Delivery Control</span>
-        </div>
-
-        <nav className="flex-1 space-y-1 p-4">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              onClick={handleNavClick}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )
-              }
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="border-t p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground truncate max-w-[140px]">{user?.username}</span>
-            <div className="flex gap-1">
-              {user?.isAdmin && (
-                <span className="text-[10px] font-medium uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                  Admin
-                </span>
-              )}
-              {user?.isAnderson && (
-                <span className="text-[10px] font-medium uppercase bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">
-                  Editor
-                </span>
-              )}
-            </div>
+        {/* Sidebar */}
+        <aside
+          className={cn(
+            "flex w-64 flex-col border-r bg-background transition-transform duration-300 ease-in-out",
+            desktopOpen ? "translate-x-0" : "-translate-x-full",
+            className
+          )}
+        >
+          <div className="flex h-14 items-center gap-2 border-b px-6">
+            <Truck className="h-5 w-5 text-primary" />
+            <span className="font-semibold text-sm">Hospital Delivery Control</span>
           </div>
-          <Button variant="ghost" size="sm" className="w-full justify-start text-destructive" onClick={signOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sair
-          </Button>
+
+          <nav className="flex-1 space-y-1 p-4">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/"}
+                onClick={handleNavClick}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )
+                }
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+
+          <div className="border-t p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground truncate max-w-[140px]">{user?.username}</span>
+              <div className="flex gap-1">
+                {user?.isAdmin && (
+                  <span className="text-[10px] font-medium uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                    Admin
+                  </span>
+                )}
+                {user?.isAnderson && (
+                  <span className="text-[10px] font-medium uppercase bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">
+                    Editor
+                  </span>
+                )}
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" className="w-full justify-start text-destructive" onClick={signOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </Button>
+          </div>
+        </aside>
+
+        {/* Trigger Tab */}
+        <div
+          className={cn(
+            "flex items-center justify-center w-6 h-full border border-l-0 rounded-r-lg bg-background shadow-md transition-transform duration-300 cursor-pointer",
+            desktopOpen ? "translate-x-0" : "translate-x-0"
+          )}
+        >
+          <ChevronRight className={cn("h-4 w-4 transition-transform duration-300", desktopOpen && "rotate-180")} />
         </div>
-      </aside>
+      </div>
     </>
   );
 }
