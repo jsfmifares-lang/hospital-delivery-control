@@ -17,17 +17,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/StatusBadge";
-import { useEntregas, useUpdateEntregaStatus } from "@/hooks/useQueries";
+import {
+  useEntregas,
+  useUpdateEntregaStatus,
+  useUpdateStatusByHospital,
+} from "@/hooks/useQueries";
 import { useAuth } from "@/hooks/useAuth";
 import type { Entrega, StatusEntrega } from "@/types";
 
 export function MonitorEntregas() {
   const [selectedEntrega, setSelectedEntrega] = useState<Entrega | null>(null);
   const [newStatus, setNewStatus] = useState<StatusEntrega>("Pendente");
+  const [updateAllPending, setUpdateAllPending] = useState(false);
 
   const { data: entregas = [], isLoading, refetch } = useEntregas();
   const updateStatus = useUpdateEntregaStatus();
+  const updateAllByHospital = useUpdateStatusByHospital();
   const { user } = useAuth();
 
   const canEdit = user?.isAdmin || user?.isAnderson;
@@ -36,15 +43,23 @@ export function MonitorEntregas() {
     if (!canEdit) return;
     setSelectedEntrega(entrega);
     setNewStatus(entrega.status);
+    setUpdateAllPending(false);
   };
 
   const handleSave = async () => {
     if (!selectedEntrega) return;
 
-    await updateStatus.mutateAsync({
-      id: selectedEntrega.id,
-      input: { status: newStatus },
-    });
+    if (updateAllPending && newStatus !== "Pendente") {
+      await updateAllByHospital.mutateAsync({
+        hospitalId: selectedEntrega.hospital_id,
+        newStatus,
+      });
+    } else {
+      await updateStatus.mutateAsync({
+        id: selectedEntrega.id,
+        input: { status: newStatus },
+      });
+    }
 
     setSelectedEntrega(null);
   };
@@ -75,6 +90,14 @@ export function MonitorEntregas() {
     if (a.status !== "Pendente" && b.status === "Pendente") return 1;
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
+
+  const pendingCount = selectedEntrega
+    ? entregas.filter(
+        (e) =>
+          e.hospital_id === selectedEntrega.hospital_id &&
+          e.status === "Pendente"
+      ).length
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -235,7 +258,7 @@ export function MonitorEntregas() {
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
+                <Label>Status</Label>
                 <Select
                   value={newStatus}
                   onValueChange={(v) => setNewStatus(v as StatusEntrega)}
@@ -251,18 +274,38 @@ export function MonitorEntregas() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {newStatus !== "Pendente" && pendingCount > 1 && (
+                <div className="flex items-center gap-2 rounded-lg border p-3 bg-muted/50">
+                  <input
+                    type="checkbox"
+                    id="updateAll"
+                    checked={updateAllPending}
+                    onChange={(e) => setUpdateAllPending(e.target.checked)}
+                    className="h-4 w-4 rounded"
+                  />
+                  <Label htmlFor="updateAll" className="text-sm cursor-pointer">
+                    Aplicar a todos pendentes deste hospital ({pendingCount})
+                  </Label>
+                </div>
+              )}
             </div>
 
             <DialogFooter>
               <Button
                 variant="outline"
                 onClick={() => setSelectedEntrega(null)}
-                disabled={updateStatus.isPending}
+                disabled={updateStatus.isPending || updateAllByHospital.isPending}
               >
                 Cancelar
               </Button>
-              <Button onClick={handleSave} disabled={updateStatus.isPending}>
-                {updateStatus.isPending ? "Salvando..." : "Salvar"}
+              <Button
+                onClick={handleSave}
+                disabled={updateStatus.isPending || updateAllByHospital.isPending}
+              >
+                {updateStatus.isPending || updateAllByHospital.isPending
+                  ? "Salvando..."
+                  : "Salvar"}
               </Button>
             </DialogFooter>
           </DialogContent>

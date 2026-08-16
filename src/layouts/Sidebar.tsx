@@ -8,6 +8,7 @@ import {
   X,
   Truck,
   LogOut,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -122,11 +123,13 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
       </div>
 
-      {/* Desktop - Invisible hover zone */}
+      {/* Desktop - Visible hover trigger */}
       <div
-        className="hidden lg:block lg:fixed lg:inset-y-0 lg:left-0 lg:z-[55] lg:w-1"
+        className="hidden lg:flex lg:fixed lg:inset-y-0 lg:left-0 lg:z-[55] lg:w-8 lg:items-center lg:justify-center lg:cursor-pointer lg:hover:bg-muted/50 lg:transition-colors"
         onMouseEnter={handleMouseEnter}
-      />
+      >
+        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+      </div>
 
       {/* Desktop Overlay */}
       {desktopOpen && (

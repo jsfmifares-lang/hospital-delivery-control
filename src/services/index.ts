@@ -102,4 +102,17 @@ export const entregaService = {
 
     if (error) throw error;
   },
+
+  async updateStatusByHospital(
+    hospitalId: string,
+    newStatus: string
+  ): Promise<void> {
+    const { error } = await supabase
+      .from("entregas")
+      .update({ status: newStatus })
+      .eq("hospital_id", hospitalId)
+      .eq("status", "Pendente");
+
+    if (error) throw error;
+  },
 };

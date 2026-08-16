@@ -121,3 +121,20 @@ export function useDeleteEntrega() {
     },
   });
 }
+
+export function useUpdateStatusByHospital() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      hospitalId,
+      newStatus,
+    }: {
+      hospitalId: string;
+      newStatus: string;
+    }) => entregaService.updateStatusByHospital(hospitalId, newStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["entregas"] });
+    },
+  });
+}
