@@ -8,7 +8,7 @@ export function AppLayout() {
 
       {/* Main Content */}
       <main className="min-h-screen">
-        <div className="pt-14 lg:pt-6">
+        <div className="pt-14 lg:pt-6 lg:pl-8">
           <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
             <Outlet />
           </div>
