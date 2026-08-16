@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Plus,
@@ -7,7 +7,6 @@ import {
   Menu,
   X,
   Truck,
-  ChevronRight,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,6 +20,7 @@ interface SidebarProps {
 export function Sidebar({ className }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(false);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
   const { user, signOut } = useAuth();
 
   const navItems = [
@@ -28,6 +28,24 @@ export function Sidebar({ className }: SidebarProps) {
     { to: "/monitor", label: "Monitor de Entregas", icon: Monitor, show: true },
     { to: "/hospitais", label: "Hospitais", icon: Building2, show: user?.isAdmin },
   ].filter((item) => item.show);
+
+  const handleMouseEnter = useCallback(() => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setDesktopOpen(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setDesktopOpen(false);
+    }, 300);
+  }, []);
+
+  const handleNavClick = useCallback(() => {
+    setDesktopOpen(false);
+  }, []);
 
   return (
     <>
@@ -104,24 +122,11 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
       </div>
 
-      {/* Desktop - Toggle Button */}
-      <button
-        onClick={() => setDesktopOpen(!desktopOpen)}
-        className={cn(
-          "hidden lg:fixed lg:top-4 lg:left-0 lg:z-[60] lg:flex lg:h-10 lg:w-8 lg:items-center lg:justify-center lg:rounded-r-lg lg:bg-background lg:border lg:border-l-0 lg:shadow-md lg:transition-transform lg:duration-300",
-          desktopOpen ? "translate-x-64" : "translate-x-0"
-        )}
-      >
-        <ChevronRight className={cn("h-4 w-4 transition-transform", desktopOpen && "rotate-180")} />
-      </button>
-
-      {/* Desktop Overlay */}
-      {desktopOpen && (
-        <div
-          className="hidden lg:fixed lg:inset-0 lg:z-40 lg:bg-black/20"
-          onClick={() => setDesktopOpen(false)}
-        />
-      )}
+      {/* Desktop - Hover Trigger Zone */}
+      <div
+        className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-[59] lg:w-3"
+        onMouseEnter={handleMouseEnter}
+      />
 
       {/* Desktop Sidebar */}
       <aside
@@ -130,6 +135,8 @@ export function Sidebar({ className }: SidebarProps) {
           desktopOpen ? "translate-x-0" : "-translate-x-full",
           className
         )}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <div className="flex h-14 items-center gap-2 border-b px-6">
           <Truck className="h-5 w-5 text-primary" />
@@ -142,7 +149,7 @@ export function Sidebar({ className }: SidebarProps) {
               key={item.to}
               to={item.to}
               end={item.to === "/"}
-              onClick={() => setDesktopOpen(false)}
+              onClick={handleNavClick}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
