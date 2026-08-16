@@ -32,12 +32,10 @@ export interface UpdateEntregaInput {
 
 export interface CreateHospitalInput {
   nome: string;
-  cidade?: string;
   observacao?: string;
 }
 
 export interface UpdateHospitalInput {
   nome: string;
-  cidade?: string;
   observacao?: string;
 }

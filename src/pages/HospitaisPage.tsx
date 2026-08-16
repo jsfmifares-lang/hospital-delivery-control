@@ -29,7 +29,6 @@ import type { Hospital, CreateHospitalInput } from "@/types";
 
 const emptyForm: CreateHospitalInput = {
   nome: "",
-  cidade: "",
   observacao: "",
 };
 
@@ -56,7 +55,6 @@ export function HospitaisPage() {
     setEditingHospital(hospital);
     setForm({
       nome: hospital.nome,
-      cidade: hospital.cidade ?? "",
       observacao: hospital.observacao ?? "",
     });
     setShowForm(true);
@@ -130,12 +128,9 @@ export function HospitaisPage() {
             <>
               {/* Desktop Table */}
               <div className="hidden md:block">
-                <div className="grid grid-cols-[1fr_1fr_2fr_100px] gap-4 border-b pb-3 mb-2">
+                <div className="grid grid-cols-[1fr_2fr_100px] gap-4 border-b pb-3 mb-2">
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Nome
-                  </span>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Cidade
                   </span>
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Observação
@@ -149,15 +144,12 @@ export function HospitaisPage() {
                   {hospitals.map((hospital) => (
                     <div
                       key={hospital.id}
-                      className="grid grid-cols-[1fr_1fr_2fr_100px] gap-4 items-center rounded-lg p-3 hover:bg-muted/50 transition-colors"
+                      className="grid grid-cols-[1fr_2fr_100px] gap-4 items-center rounded-lg p-3 hover:bg-muted/50 transition-colors"
                     >
-                      <span className="font-medium truncate">
+                      <span className="font-medium break-words">
                         {hospital.nome}
                       </span>
-                      <span className="text-sm text-muted-foreground truncate">
-                        {hospital.cidade || "—"}
-                      </span>
-                      <span className="text-sm text-muted-foreground truncate">
+                      <span className="text-sm text-muted-foreground break-words">
                         {hospital.observacao || "—"}
                       </span>
                       <div className="flex items-center justify-end gap-1">
@@ -189,14 +181,7 @@ export function HospitaisPage() {
                     className="rounded-lg border p-4 space-y-3"
                   >
                     <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium">{hospital.nome}</p>
-                        {hospital.cidade && (
-                          <p className="text-sm text-muted-foreground">
-                            {hospital.cidade}
-                          </p>
-                        )}
-                      </div>
+                      <p className="font-medium break-words">{hospital.nome}</p>
                       <div className="flex gap-1">
                         <Button
                           variant="ghost"
@@ -215,7 +200,7 @@ export function HospitaisPage() {
                       </div>
                     </div>
                     {hospital.observacao && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground break-words">
                         {hospital.observacao}
                       </p>
                     )}
@@ -249,16 +234,6 @@ export function HospitaisPage() {
                 value={form.nome}
                 onChange={(e) => setForm({ ...form, nome: e.target.value.toUpperCase() })}
                 placeholder="EX: HOSPITAL SANTA JOANA"
-                style={{ textTransform: "uppercase" }}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="cidade">Cidade</Label>
-              <Input
-                id="cidade"
-                value={form.cidade}
-                onChange={(e) => setForm({ ...form, cidade: e.target.value.toUpperCase() })}
-                placeholder="EX: RECIFE"
                 style={{ textTransform: "uppercase" }}
               />
             </div>
