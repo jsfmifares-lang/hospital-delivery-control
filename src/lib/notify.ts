@@ -1,8 +1,21 @@
 import { toast } from "sonner";
 
+let swRegistration: ServiceWorkerRegistration | null = null;
+
+async function initServiceWorker() {
+  if ("serviceWorker" in navigator && !swRegistration) {
+    try {
+      swRegistration = await navigator.serviceWorker.register("/sw.js");
+      console.log("Service Worker registrado");
+    } catch (e) {
+      console.log("Service Worker nao registrado:", e);
+    }
+  }
+}
+
 function playNotificationSound() {
   try {
-    const ctx = new AudioContext();
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
@@ -35,14 +48,15 @@ function showWinNotification(title: string, body: string) {
 
   console.log("Permissao notificacao:", Notification.permission);
 
+  playNotificationSound();
+
   if (Notification.permission === "granted") {
-    playNotificationSound();
     try {
       const n = new Notification(title, {
         body,
         icon: "/favicon.ico",
         requireInteraction: true,
-        silent: false,
+        silent: true,
       });
       n.onclick = () => {
         window.focus();
@@ -50,31 +64,49 @@ function showWinNotification(title: string, body: string) {
       };
       console.log("Notificacao Windows enviada:", title);
     } catch (e) {
-      console.error("Erro ao criar notificacao:", e);
+      console.error("Erro Notification API, tentando Service Worker:", e);
+      tryViaSW(title, body);
     }
   } else if (Notification.permission === "default") {
     Notification.requestPermission().then((perm) => {
       console.log("Permissao apos pedido:", perm);
       if (perm === "granted") {
-        playNotificationSound();
         try {
           const n = new Notification(title, {
             body,
             icon: "/favicon.ico",
             requireInteraction: true,
-            silent: false,
+            silent: true,
           });
           n.onclick = () => {
             window.focus();
             n.close();
           };
         } catch (e) {
-          console.error("Erro ao criar notificacao:", e);
+          tryViaSW(title, body);
         }
       }
     });
   } else {
-    console.log("Notificacoes bloqueadas pelo navegador");
+    console.log("Notificacoes bloqueadas, tentando Service Worker");
+    tryViaSW(title, body);
+  }
+}
+
+async function tryViaSW(title: string, body: string) {
+  try {
+    await initServiceWorker();
+    if (swRegistration && swRegistration.active) {
+      swRegistration.active.postMessage({
+        type: "SHOW_NOTIFICATION",
+        title,
+        body,
+        icon: "/favicon.ico",
+      });
+      console.log("Notificacao via Service Worker:", title);
+    }
+  } catch (e) {
+    console.error("Erro via SW:", e);
   }
 }
 
@@ -170,6 +202,7 @@ export function notifyHospitalDeleted(username: string, hospitalName: string) {
 }
 
 export function requestNotificationPermission() {
+  initServiceWorker();
   if ("Notification" in window) {
     if (Notification.permission === "default") {
       Notification.requestPermission().then((perm) => {
