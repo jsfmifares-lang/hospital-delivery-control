@@ -62,15 +62,13 @@ function showToast(title: string, msg: string, color: string, isError = false) {
 
 async function showWinNotification(title: string, body: string) {
   playNotificationSound();
+  console.log("Notificacao:", title, "| Permissao:", Notification.permission, "| Edge:", isEdge);
 
-  // Edge: sempre via Service Worker
-  if (isEdge) {
+  if (!("Notification" in window)) {
+    console.log("Notification API indisponivel, usando SW");
     await tryViaSW(title, body);
     return;
   }
-
-  // Chrome: Notification API
-  if (!("Notification" in window)) return;
 
   if (Notification.permission === "granted") {
     try {
@@ -81,26 +79,30 @@ async function showWinNotification(title: string, body: string) {
         silent: true,
       });
       n.onclick = () => { window.focus(); n.close(); };
+      console.log("Notificacao criada com sucesso");
     } catch (e) {
+      console.log("Erro ao criar notificacao, usando SW:", e);
       await tryViaSW(title, body);
     }
   } else if (Notification.permission === "default") {
-    Notification.requestPermission().then(async (perm) => {
-      if (perm === "granted") {
-        try {
-          const n = new Notification(title, {
-            body,
-            icon: "/favicon.ico",
-            requireInteraction: true,
-            silent: true,
-          });
-          n.onclick = () => { window.focus(); n.close(); };
-        } catch (e) {
-          await tryViaSW(title, body);
-        }
+    console.log("Pedindo permissao...");
+    const perm = await Notification.requestPermission();
+    console.log("Permissao obtida:", perm);
+    if (perm === "granted") {
+      try {
+        const n = new Notification(title, {
+          body,
+          icon: "/favicon.ico",
+          requireInteraction: true,
+          silent: true,
+        });
+        n.onclick = () => { window.focus(); n.close(); };
+      } catch (e) {
+        await tryViaSW(title, body);
       }
-    });
+    }
   } else {
+    console.log("Notificacoes bloqueadas, usando SW");
     await tryViaSW(title, body);
   }
 }
@@ -152,7 +154,7 @@ export function notifyHospitalDeleted(username: string, hospitalName: string) {
 
 export function requestNotificationPermission() {
   initServiceWorker();
-  if (!isEdge && "Notification" in window && Notification.permission === "default") {
+  if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission();
   }
 }
