@@ -79,7 +79,10 @@ export function HospitaisPage() {
 
   const handleDelete = async () => {
     if (!deletingHospital) return;
-    await deleteHospital.mutateAsync(deletingHospital.id);
+    await deleteHospital.mutateAsync({
+      id: deletingHospital.id,
+      nome: deletingHospital.nome,
+    });
     setDeletingHospital(null);
   };
 

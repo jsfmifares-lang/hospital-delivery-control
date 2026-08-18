@@ -53,11 +53,14 @@ export function MonitorEntregas() {
       await updateAllByHospital.mutateAsync({
         hospitalId: selectedEntrega.hospital_id,
         newStatus,
+        hospitalName: selectedEntrega.nome_hospital,
+        count: pendingCount,
       });
     } else {
       await updateStatus.mutateAsync({
         id: selectedEntrega.id,
         input: { status: newStatus },
+        hospitalName: selectedEntrega.nome_hospital,
       });
     }
 

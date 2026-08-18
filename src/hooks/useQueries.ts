@@ -2,6 +2,13 @@ import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { hospitalService, entregaService } from "@/services";
 import { supabase } from "@/lib/supabase";
+import {
+  notifyCreated,
+  notifyStatusUpdated,
+  notifyHospitalCreated,
+  notifyHospitalUpdated,
+  notifyHospitalDeleted,
+} from "@/lib/notify";
 import type {
   Hospital,
   Entrega,
@@ -31,8 +38,12 @@ export function useCreateHospital() {
 
   return useMutation({
     mutationFn: (input: CreateHospitalInput) => hospitalService.create(input),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["hospitais"] });
+      notifyHospitalCreated(
+        localStorage.getItem("username") || "Usuário",
+        variables.nome
+      );
     },
   });
 }
@@ -43,8 +54,12 @@ export function useUpdateHospital() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateHospitalInput }) =>
       hospitalService.update(id, input),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["hospitais"] });
+      notifyHospitalUpdated(
+        localStorage.getItem("username") || "Usuário",
+        variables.input.nome
+      );
     },
   });
 }
@@ -53,9 +68,14 @@ export function useDeleteHospital() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => hospitalService.remove(id),
-    onSuccess: () => {
+    mutationFn: (input: { id: string; nome: string }) =>
+      hospitalService.remove(input.id),
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["hospitais"] });
+      notifyHospitalDeleted(
+        localStorage.getItem("username") || "Usuário",
+        variables.nome
+      );
     },
   });
 }
@@ -93,8 +113,12 @@ export function useCreateEntrega() {
 
   return useMutation({
     mutationFn: (input: CreateEntregaInput) => entregaService.create(input),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
+      notifyCreated(
+        variables.created_by || "Usuário",
+        variables.nome_hospital
+      );
     },
   });
 }
@@ -103,21 +127,23 @@ export function useUpdateEntregaStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdateEntregaInput }) =>
-      entregaService.updateStatus(id, input),
-    onSuccess: () => {
+    mutationFn: ({
+      id,
+      input,
+      hospitalName,
+    }: {
+      id: string;
+      input: UpdateEntregaInput;
+      hospitalName?: string;
+    }) => entregaService.updateStatus(id, input),
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
-    },
-  });
-}
-
-export function useDeleteEntrega() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => entregaService.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["entregas"] });
+      notifyStatusUpdated(
+        localStorage.getItem("username") || "Usuário",
+        variables.hospitalName || "Entrega",
+        variables.input.status,
+        1
+      );
     },
   });
 }
@@ -129,10 +155,31 @@ export function useUpdateStatusByHospital() {
     mutationFn: ({
       hospitalId,
       newStatus,
+      hospitalName,
+      count,
     }: {
       hospitalId: string;
       newStatus: string;
+      hospitalName: string;
+      count: number;
     }) => entregaService.updateStatusByHospital(hospitalId, newStatus),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["entregas"] });
+      notifyStatusUpdated(
+        localStorage.getItem("username") || "Usuário",
+        variables.hospitalName,
+        variables.newStatus,
+        variables.count
+      );
+    },
+  });
+}
+
+export function useDeleteEntrega() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => entregaService.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
     },

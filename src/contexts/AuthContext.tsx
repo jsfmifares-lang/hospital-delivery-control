@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { requestNotificationPermission } from "@/lib/notify";
 
 export interface AuthUser {
   id: string;
@@ -109,6 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setUser(authUser);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
+    requestNotificationPermission();
 
     return { error: null };
   };

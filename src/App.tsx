@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/layouts/AppLayout";
 import { LoginPage } from "@/pages/LoginPage";
@@ -118,6 +119,19 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <AppRoutes />
+          <Toaster
+            position="top-right"
+            richColors
+            closeButton
+            duration={4000}
+            toastOptions={{
+              style: {
+                background: "hsl(var(--background))",
+                border: "1px solid hsl(var(--border))",
+                color: "hsl(var(--foreground))",
+              },
+            }}
+          />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
