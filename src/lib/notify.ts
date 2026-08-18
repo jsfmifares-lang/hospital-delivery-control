@@ -1,21 +1,30 @@
 import { toast } from "sonner";
 
 let swRegistration: ServiceWorkerRegistration | null = null;
+let audioCtx: AudioContext | null = null;
 const isEdge = navigator.userAgent.includes("Edg/");
 
 async function initServiceWorker() {
   if ("serviceWorker" in navigator && !swRegistration) {
     try {
       swRegistration = await navigator.serviceWorker.register("/sw.js");
-    } catch (e) {
-      console.log("SW error:", e);
-    }
+    } catch (e) {}
   }
+}
+
+function getAudioCtx(): AudioContext {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+  return audioCtx;
 }
 
 function playNotificationSound() {
   try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const ctx = getAudioCtx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -30,7 +39,6 @@ function playNotificationSound() {
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
     osc.start(now);
     osc.stop(now + 0.4);
-    setTimeout(() => ctx.close(), 500);
   } catch (e) {}
 }
 
@@ -53,9 +61,8 @@ function showToast(title: string, msg: string, color: string, isError = false) {
 function showWinNotification(title: string, body: string) {
   if (!("Notification" in window)) return;
 
-  playNotificationSound();
-
   if (Notification.permission === "granted") {
+    playNotificationSound();
     try {
       const n = new Notification(title, {
         body,
@@ -70,6 +77,7 @@ function showWinNotification(title: string, body: string) {
   } else if (Notification.permission === "default") {
     Notification.requestPermission().then((perm) => {
       if (perm === "granted") {
+        playNotificationSound();
         try {
           const n = new Notification(title, {
             body,
@@ -92,6 +100,7 @@ async function tryViaSW(title: string, body: string) {
   try {
     await initServiceWorker();
     if (swRegistration?.active) {
+      playNotificationSound();
       swRegistration.active.postMessage({ type: "SHOW_NOTIFICATION", title, body, icon: "/favicon.ico" });
     }
   } catch (e) {}
