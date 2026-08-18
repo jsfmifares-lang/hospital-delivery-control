@@ -84,15 +84,11 @@ export const entregaService = {
 
   async updateStatus(
     id: string,
-    input: UpdateEntregaInput,
-    updatedBy?: string
+    input: UpdateEntregaInput
   ): Promise<Entrega> {
-    const updateData: Record<string, unknown> = { status: input.status };
-    if (updatedBy) updateData.updated_by = updatedBy;
-
     const { data, error } = await supabase
       .from("entregas")
-      .update(updateData)
+      .update({ status: input.status })
       .eq("id", id)
       .select()
       .single();
@@ -109,15 +105,11 @@ export const entregaService = {
 
   async updateStatusByHospital(
     hospitalId: string,
-    newStatus: string,
-    updatedBy?: string
+    newStatus: string
   ): Promise<void> {
-    const updateData: Record<string, unknown> = { status: newStatus };
-    if (updatedBy) updateData.updated_by = updatedBy;
-
     const { error } = await supabase
       .from("entregas")
-      .update(updateData)
+      .update({ status: newStatus })
       .eq("hospital_id", hospitalId)
       .eq("status", "Pendente");
 

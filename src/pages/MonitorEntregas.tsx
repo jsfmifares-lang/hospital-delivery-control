@@ -23,6 +23,7 @@ import {
   useEntregas,
   useUpdateEntregaStatus,
   useUpdateStatusByHospital,
+  trackUpdate,
 } from "@/hooks/useQueries";
 import { useAuth } from "@/hooks/useAuth";
 import { requestNotificationPermission } from "@/lib/notify";
@@ -58,6 +59,7 @@ export function MonitorEntregas() {
         count: pendingCount,
       });
     } else {
+      trackUpdate(selectedEntrega.id, user?.username || "Desconhecido");
       await updateStatus.mutateAsync({
         id: selectedEntrega.id,
         input: { status: newStatus },

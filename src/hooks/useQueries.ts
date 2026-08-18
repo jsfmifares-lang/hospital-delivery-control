@@ -18,6 +18,12 @@ import type {
   UpdateHospitalInput,
 } from "@/types";
 
+const pendingUpdaters = new Map<string, string>();
+
+export function trackUpdate(entregaId: string, username: string) {
+  pendingUpdaters.set(entregaId, username);
+}
+
 function getCurrentUsername(): string {
   try {
     const stored = localStorage.getItem("hd_current_user");
@@ -166,7 +172,9 @@ export function useEntregas() {
           const entrega = payload.new as Entrega;
           const entregaOld = payload.old as Entrega;
           const currentUser = getCurrentUsername();
-          const updater = (entrega as any).updated_by || entrega.created_by || "Alguem";
+          const pendingUser = pendingUpdaters.get(entrega.id);
+          pendingUpdaters.delete(entrega.id);
+          const updater = pendingUser || entrega.created_by || "Alguem";
           if (updater !== currentUser && entrega.status !== entregaOld?.status) {
             notifyStatusUpdated(
               updater,
@@ -214,10 +222,7 @@ export function useUpdateEntregaStatus() {
       id: string;
       input: UpdateEntregaInput;
       hospitalName?: string;
-    }) => {
-      const username = getCurrentUsername();
-      return entregaService.updateStatus(id, input, username);
-    },
+    }) => entregaService.updateStatus(id, input),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
     },
@@ -238,10 +243,7 @@ export function useUpdateStatusByHospital() {
       newStatus: string;
       hospitalName: string;
       count: number;
-    }) => {
-      const username = getCurrentUsername();
-      return entregaService.updateStatusByHospital(hospitalId, newStatus, username);
-    },
+    }) => entregaService.updateStatusByHospital(hospitalId, newStatus),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
     },
