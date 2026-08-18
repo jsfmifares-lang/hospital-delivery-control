@@ -18,6 +18,17 @@ import type {
   UpdateHospitalInput,
 } from "@/types";
 
+function getCurrentUsername(): string {
+  try {
+    const stored = localStorage.getItem("hd_current_user");
+    if (stored) {
+      const user = JSON.parse(stored);
+      return user.username || "";
+    }
+  } catch {}
+  return "";
+}
+
 export function useHospitais() {
   const queryClient = useQueryClient();
   const lastUserRef = useRef<string | null>(null);
@@ -36,7 +47,7 @@ export function useHospitais() {
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ["hospitais"] });
           const hospital = payload.new as Hospital;
-          const currentUser = localStorage.getItem("username") || "";
+          const currentUser = getCurrentUsername();
           if (hospital.nome !== currentUser) {
             notifyHospitalCreated("Alguém", hospital.nome);
           }
@@ -48,7 +59,7 @@ export function useHospitais() {
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ["hospitais"] });
           const hospital = payload.new as Hospital;
-          const currentUser = localStorage.getItem("username") || "";
+          const currentUser = getCurrentUsername();
           if (hospital.nome !== currentUser) {
             notifyHospitalUpdated("Alguém", hospital.nome);
           }
@@ -132,7 +143,7 @@ export function useEntregas() {
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ["entregas"] });
           const entrega = payload.new as Entrega;
-          const currentUser = localStorage.getItem("username") || "";
+          const currentUser = getCurrentUsername();
           if (entrega.created_by !== currentUser) {
             notifyCreated(
               entrega.created_by || "Alguém",
@@ -148,8 +159,8 @@ export function useEntregas() {
           queryClient.invalidateQueries({ queryKey: ["entregas"] });
           const entrega = payload.new as Entrega;
           const entregaOld = payload.old as Entrega;
-          const currentUser = localStorage.getItem("username") || "";
-          if (entrega.created_by !== currentUser && entrega.status !== entregaOld.status) {
+          const currentUser = getCurrentUsername();
+          if (entrega.created_by !== currentUser && entrega.status !== entregaOld?.status) {
             notifyStatusUpdated(
               entrega.created_by || "Alguém",
               entrega.nome_hospital,

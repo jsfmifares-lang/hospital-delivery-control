@@ -30,6 +30,13 @@ CREATE INDEX IF NOT EXISTS idx_hospitais_nome ON hospitais(nome);
 -- Habilitar Realtime na tabela entregas
 ALTER PUBLICATION supabase_realtime ADD TABLE entregas;
 
+-- Habilitar Realtime na tabela hospitais
+ALTER PUBLICATION supabase_realtime ADD TABLE hospitais;
+
+-- REPLICA IDENTITY FULL para capturar dados antigos no UPDATE
+ALTER TABLE entregas REPLICA IDENTITY FULL;
+ALTER TABLE hospitais REPLICA IDENTITY FULL;
+
 -- Função para atualizar updated_at automaticamente
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

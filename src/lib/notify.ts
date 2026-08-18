@@ -1,75 +1,102 @@
 import { toast } from "sonner";
 
+let audioCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+  }
+  return audioCtx;
+}
+
 function playNotificationSound() {
   try {
-    const ctx = new AudioContext();
+    const ctx = getAudioContext();
 
-    const osc1 = ctx.createOscillator();
-    const osc2 = ctx.createOscillator();
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+
+    const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc1.connect(gain);
-    osc2.connect(gain);
+    osc.connect(gain);
     gain.connect(ctx.destination);
 
-    osc1.type = "sine";
-    osc2.type = "sine";
+    osc.type = "sine";
 
-    osc1.frequency.setValueAtTime(880, ctx.currentTime);
-    osc1.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
-    osc1.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
+    const now = ctx.currentTime;
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.setValueAtTime(1100, now + 0.08);
+    osc.frequency.setValueAtTime(880, now + 0.16);
+    osc.frequency.setValueAtTime(1320, now + 0.24);
 
-    osc2.frequency.setValueAtTime(440, ctx.currentTime);
-    osc2.frequency.setValueAtTime(550, ctx.currentTime + 0.1);
-    osc2.frequency.setValueAtTime(440, ctx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
 
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-
-    osc1.start(ctx.currentTime);
-    osc2.start(ctx.currentTime);
-    osc1.stop(ctx.currentTime + 0.5);
-    osc2.stop(ctx.currentTime + 0.5);
-
-    setTimeout(() => ctx.close(), 600);
-  } catch {}
+    osc.start(now);
+    osc.stop(now + 0.4);
+  } catch (e) {
+    console.error("Erro ao tocar som:", e);
+  }
 }
 
 function sendDesktopNotification(title: string, body: string) {
-  if ("Notification" in window && Notification.permission === "granted") {
+  if (!("Notification" in window)) return;
+
+  if (Notification.permission === "granted") {
     playNotificationSound();
+    showWinNotification(title, body);
+  } else if (Notification.permission === "default") {
+    Notification.requestPermission().then((perm) => {
+      if (perm === "granted") {
+        playNotificationSound();
+        showWinNotification(title, body);
+      }
+    });
+  }
+}
 
-    try {
-      const n = new Notification(title, {
-        body,
-        icon: "/favicon.ico",
-        requireInteraction: true,
-        silent: false,
-        tag: `hd-${Date.now()}`,
-      });
+function showWinNotification(title: string, body: string) {
+  try {
+    const n = new Notification(title, {
+      body,
+      icon: "/favicon.ico",
+      requireInteraction: true,
+      silent: false,
+      tag: `hd-${Date.now()}-${Math.random()}`,
+    });
 
-      n.onclick = () => {
-        window.focus();
-        n.close();
-      };
+    n.onclick = () => {
+      window.focus();
+      n.close();
+    };
 
-      setTimeout(() => n.close(), 30000);
-    } catch {}
+    setTimeout(() => n.close(), 60000);
+  } catch (e) {
+    console.error("Erro na notificação:", e);
   }
 }
 
 export function notifyCreated(username: string, hospitalName: string) {
   const msg = `${username} criou nova entrega em ${hospitalName}`;
+
   toast.success("Nova Entrega", {
     description: msg,
     style: {
       background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
       color: "#fff",
       border: "none",
+      fontSize: "14px",
     },
     duration: Infinity,
+    action: {
+      label: "Fechar",
+      onClick: () => {},
+    },
   });
-  sendDesktopNotification("Nova Entrega", msg);
+
+  sendDesktopNotification("📦 Nova Entrega", msg);
 }
 
 export function notifyStatusUpdated(
@@ -80,62 +107,92 @@ export function notifyStatusUpdated(
 ) {
   const suffix = count > 1 ? ` (${count} entregas)` : "";
   const msg = `${username} atualizou ${hospitalName}${suffix} para "${newStatus}"`;
+
   toast.success("Status Atualizado", {
     description: msg,
     style: {
       background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
       color: "#fff",
       border: "none",
+      fontSize: "14px",
     },
     duration: Infinity,
+    action: {
+      label: "Fechar",
+      onClick: () => {},
+    },
   });
-  sendDesktopNotification("Status Atualizado", msg);
+
+  sendDesktopNotification("🚚 Status Atualizado", msg);
 }
 
 export function notifyHospitalCreated(username: string, hospitalName: string) {
   const msg = `${username} cadastrou ${hospitalName}`;
+
   toast.success("Hospital Cadastrado", {
     description: msg,
     style: {
       background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
       color: "#fff",
       border: "none",
+      fontSize: "14px",
     },
     duration: Infinity,
+    action: {
+      label: "Fechar",
+      onClick: () => {},
+    },
   });
-  sendDesktopNotification("Hospital Cadastrado", msg);
+
+  sendDesktopNotification("🏥 Hospital Cadastrado", msg);
 }
 
 export function notifyHospitalUpdated(username: string, hospitalName: string) {
   const msg = `${username} atualizou ${hospitalName}`;
+
   toast.success("Hospital Atualizado", {
     description: msg,
     style: {
       background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
       color: "#fff",
       border: "none",
+      fontSize: "14px",
     },
     duration: Infinity,
+    action: {
+      label: "Fechar",
+      onClick: () => {},
+    },
   });
-  sendDesktopNotification("Hospital Atualizado", msg);
+
+  sendDesktopNotification("🏥 Hospital Atualizado", msg);
 }
 
 export function notifyHospitalDeleted(username: string, hospitalName: string) {
   const msg = `${username} excluiu ${hospitalName}`;
-  toast.success("Hospital Excluído", {
+
+  toast.error("Hospital Excluído", {
     description: msg,
     style: {
       background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
       color: "#fff",
       border: "none",
+      fontSize: "14px",
     },
     duration: Infinity,
+    action: {
+      label: "Fechar",
+      onClick: () => {},
+    },
   });
-  sendDesktopNotification("Hospital Excluído", msg);
+
+  sendDesktopNotification("❌ Hospital Excluído", msg);
 }
 
 export function requestNotificationPermission() {
-  if ("Notification" in window && Notification.permission === "default") {
-    Notification.requestPermission();
+  if ("Notification" in window) {
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
   }
 }
