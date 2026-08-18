@@ -8,8 +8,10 @@ async function initServiceWorker() {
   if ("serviceWorker" in navigator && !swRegistration) {
     try {
       swRegistration = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
     } catch (e) {}
   }
+  return swRegistration;
 }
 
 function getAudioCtx(): AudioContext {
@@ -58,11 +60,19 @@ function showToast(title: string, msg: string, color: string, isError = false) {
   });
 }
 
-function showWinNotification(title: string, body: string) {
+async function showWinNotification(title: string, body: string) {
+  playNotificationSound();
+
+  // Edge: sempre via Service Worker
+  if (isEdge) {
+    await tryViaSW(title, body);
+    return;
+  }
+
+  // Chrome: Notification API
   if (!("Notification" in window)) return;
 
   if (Notification.permission === "granted") {
-    playNotificationSound();
     try {
       const n = new Notification(title, {
         body,
@@ -72,12 +82,11 @@ function showWinNotification(title: string, body: string) {
       });
       n.onclick = () => { window.focus(); n.close(); };
     } catch (e) {
-      tryViaSW(title, body);
+      await tryViaSW(title, body);
     }
   } else if (Notification.permission === "default") {
-    Notification.requestPermission().then((perm) => {
+    Notification.requestPermission().then(async (perm) => {
       if (perm === "granted") {
-        playNotificationSound();
         try {
           const n = new Notification(title, {
             body,
@@ -87,21 +96,20 @@ function showWinNotification(title: string, body: string) {
           });
           n.onclick = () => { window.focus(); n.close(); };
         } catch (e) {
-          tryViaSW(title, body);
+          await tryViaSW(title, body);
         }
       }
     });
   } else {
-    tryViaSW(title, body);
+    await tryViaSW(title, body);
   }
 }
 
 async function tryViaSW(title: string, body: string) {
   try {
-    await initServiceWorker();
-    if (swRegistration?.active) {
-      playNotificationSound();
-      swRegistration.active.postMessage({ type: "SHOW_NOTIFICATION", title, body, icon: "/favicon.ico" });
+    const reg = await initServiceWorker();
+    if (reg?.active) {
+      reg.active.postMessage({ type: "SHOW_NOTIFICATION", title, body, icon: "/favicon.ico" });
     }
   } catch (e) {}
 }
@@ -144,7 +152,7 @@ export function notifyHospitalDeleted(username: string, hospitalName: string) {
 
 export function requestNotificationPermission() {
   initServiceWorker();
-  if ("Notification" in window && Notification.permission === "default") {
+  if (!isEdge && "Notification" in window && Notification.permission === "default") {
     Notification.requestPermission();
   }
 }
