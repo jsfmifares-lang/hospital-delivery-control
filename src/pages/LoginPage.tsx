@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Truck, Loader2 } from "lucide-react";
+import { Truck, Loader2, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { requestNotificationPermission } from "@/lib/notify";
 
 export function LoginPage() {
   const [username, setUsername] = useState("");
@@ -28,6 +29,7 @@ export function LoginPage() {
       return;
     }
 
+    requestNotificationPermission();
     navigate("/monitor");
   };
 

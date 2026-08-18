@@ -3,13 +3,11 @@ import { toast } from "sonner";
 function playNotificationSound() {
   try {
     const ctx = new AudioContext();
-
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.connect(gain);
     gain.connect(ctx.destination);
-
     osc.type = "sine";
 
     const now = ctx.currentTime;
@@ -23,57 +21,66 @@ function playNotificationSound() {
 
     osc.start(now);
     osc.stop(now + 0.4);
-
     setTimeout(() => ctx.close(), 500);
   } catch (e) {
     console.error("Erro ao tocar som:", e);
   }
 }
 
-function sendDesktopNotification(title: string, body: string) {
-  if (!("Notification" in window)) return;
+function showWinNotification(title: string, body: string) {
+  if (!("Notification" in window)) {
+    console.log("Browser nao suporta Notification API");
+    return;
+  }
+
+  console.log("Permissao notificacao:", Notification.permission);
 
   if (Notification.permission === "granted") {
     playNotificationSound();
-    showWinNotification(title, body);
+    try {
+      const n = new Notification(title, {
+        body,
+        icon: "/favicon.ico",
+        requireInteraction: true,
+        silent: false,
+      });
+      n.onclick = () => {
+        window.focus();
+        n.close();
+      };
+      console.log("Notificacao Windows enviada:", title);
+    } catch (e) {
+      console.error("Erro ao criar notificacao:", e);
+    }
   } else if (Notification.permission === "default") {
     Notification.requestPermission().then((perm) => {
+      console.log("Permissao apos pedido:", perm);
       if (perm === "granted") {
         playNotificationSound();
-        showWinNotification(title, body);
+        try {
+          const n = new Notification(title, {
+            body,
+            icon: "/favicon.ico",
+            requireInteraction: true,
+            silent: false,
+          });
+          n.onclick = () => {
+            window.focus();
+            n.close();
+          };
+        } catch (e) {
+          console.error("Erro ao criar notificacao:", e);
+        }
       }
     });
-  }
-}
-
-let notifCounter = 0;
-
-function showWinNotification(title: string, body: string) {
-  try {
-    notifCounter++;
-    const n = new Notification(title, {
-      body,
-      icon: "/favicon.ico",
-      requireInteraction: true,
-      silent: false,
-    });
-
-    n.onclick = () => {
-      window.focus();
-      n.close();
-    };
-
-    setTimeout(() => {
-      try { n.close(); } catch {}
-    }, 60000);
-  } catch (e) {
-    console.error("Erro na notificação:", e);
+  } else {
+    console.log("Notificacoes bloqueadas pelo navegador");
   }
 }
 
 export function notifyCreated(username: string, hospitalName: string) {
   const msg = `${username} criou nova entrega em ${hospitalName}`;
-
+  console.log("[NOTIFY] Created:", msg);
   toast.success("Nova Entrega", {
     description: msg,
     style: {
@@ -83,13 +90,9 @@ export function notifyCreated(username: string, hospitalName: string) {
       fontSize: "14px",
     },
     duration: Infinity,
-    action: {
-      label: "Fechar",
-      onClick: () => {},
-    },
+    action: { label: "Fechar", onClick: () => {} },
   });
-
-  sendDesktopNotification("Nova Entrega", msg);
+  showWinNotification("Nova Entrega", msg);
 }
 
 export function notifyStatusUpdated(
@@ -100,7 +103,7 @@ export function notifyStatusUpdated(
 ) {
   const suffix = count > 1 ? ` (${count} entregas)` : "";
   const msg = `${username} atualizou ${hospitalName}${suffix} para "${newStatus}"`;
-
+  console.log("[NOTIFY] StatusUpdated:", msg);
   toast.success("Status Atualizado", {
     description: msg,
     style: {
@@ -110,18 +113,14 @@ export function notifyStatusUpdated(
       fontSize: "14px",
     },
     duration: Infinity,
-    action: {
-      label: "Fechar",
-      onClick: () => {},
-    },
+    action: { label: "Fechar", onClick: () => {} },
   });
-
-  sendDesktopNotification("Status Atualizado", msg);
+  showWinNotification("Status Atualizado", msg);
 }
 
 export function notifyHospitalCreated(username: string, hospitalName: string) {
   const msg = `${username} cadastrou ${hospitalName}`;
-
+  console.log("[NOTIFY] HospitalCreated:", msg);
   toast.success("Hospital Cadastrado", {
     description: msg,
     style: {
@@ -131,18 +130,14 @@ export function notifyHospitalCreated(username: string, hospitalName: string) {
       fontSize: "14px",
     },
     duration: Infinity,
-    action: {
-      label: "Fechar",
-      onClick: () => {},
-    },
+    action: { label: "Fechar", onClick: () => {} },
   });
-
-  sendDesktopNotification("Hospital Cadastrado", msg);
+  showWinNotification("Hospital Cadastrado", msg);
 }
 
 export function notifyHospitalUpdated(username: string, hospitalName: string) {
   const msg = `${username} atualizou ${hospitalName}`;
-
+  console.log("[NOTIFY] HospitalUpdated:", msg);
   toast.success("Hospital Atualizado", {
     description: msg,
     style: {
@@ -152,18 +147,14 @@ export function notifyHospitalUpdated(username: string, hospitalName: string) {
       fontSize: "14px",
     },
     duration: Infinity,
-    action: {
-      label: "Fechar",
-      onClick: () => {},
-    },
+    action: { label: "Fechar", onClick: () => {} },
   });
-
-  sendDesktopNotification("Hospital Atualizado", msg);
+  showWinNotification("Hospital Atualizado", msg);
 }
 
 export function notifyHospitalDeleted(username: string, hospitalName: string) {
   const msg = `${username} excluiu ${hospitalName}`;
-
+  console.log("[NOTIFY] HospitalDeleted:", msg);
   toast.error("Hospital Excluido", {
     description: msg,
     style: {
@@ -173,19 +164,19 @@ export function notifyHospitalDeleted(username: string, hospitalName: string) {
       fontSize: "14px",
     },
     duration: Infinity,
-    action: {
-      label: "Fechar",
-      onClick: () => {},
-    },
+    action: { label: "Fechar", onClick: () => {} },
   });
-
-  sendDesktopNotification("Hospital Excluido", msg);
+  showWinNotification("Hospital Excluido", msg);
 }
 
 export function requestNotificationPermission() {
   if ("Notification" in window) {
     if (Notification.permission === "default") {
-      Notification.requestPermission();
+      Notification.requestPermission().then((perm) => {
+        console.log("Permissao de notificacao:", perm);
+      });
+    } else {
+      console.log("Permissao de notificacao ja:", Notification.permission);
     }
   }
 }
