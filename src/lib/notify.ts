@@ -3,22 +3,35 @@ import { toast } from "sonner";
 function playNotificationSound() {
   try {
     const ctx = new AudioContext();
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
 
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
 
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(800, ctx.currentTime);
-    oscillator.frequency.setValueAtTime(1000, ctx.currentTime + 0.1);
-    oscillator.frequency.setValueAtTime(800, ctx.currentTime + 0.2);
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
 
-    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+    osc1.type = "sine";
+    osc2.type = "sine";
 
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.4);
+    osc1.frequency.setValueAtTime(880, ctx.currentTime);
+    osc1.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
+    osc1.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
+
+    osc2.frequency.setValueAtTime(440, ctx.currentTime);
+    osc2.frequency.setValueAtTime(550, ctx.currentTime + 0.1);
+    osc2.frequency.setValueAtTime(440, ctx.currentTime + 0.2);
+
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+    osc1.start(ctx.currentTime);
+    osc2.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.5);
+    osc2.stop(ctx.currentTime + 0.5);
+
+    setTimeout(() => ctx.close(), 600);
   } catch {}
 }
 
@@ -26,17 +39,22 @@ function sendDesktopNotification(title: string, body: string) {
   if ("Notification" in window && Notification.permission === "granted") {
     playNotificationSound();
 
-    const n = new Notification(title, {
-      body,
-      icon: "/favicon.ico",
-      requireInteraction: true,
-      silent: false,
-    });
+    try {
+      const n = new Notification(title, {
+        body,
+        icon: "/favicon.ico",
+        requireInteraction: true,
+        silent: false,
+        tag: `hd-${Date.now()}`,
+      });
 
-    n.onclick = () => {
-      window.focus();
-      n.close();
-    };
+      n.onclick = () => {
+        window.focus();
+        n.close();
+      };
+
+      setTimeout(() => n.close(), 30000);
+    } catch {}
   }
 }
 

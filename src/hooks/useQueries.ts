@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { hospitalService, entregaService } from "@/services";
 import { supabase } from "@/lib/supabase";
@@ -19,10 +19,57 @@ import type {
 } from "@/types";
 
 export function useHospitais() {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const lastUserRef = useRef<string | null>(null);
+
+  const query = useQuery({
     queryKey: ["hospitais"],
     queryFn: hospitalService.getAll,
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("hospitais-changes")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "hospitais" },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ["hospitais"] });
+          const hospital = payload.new as Hospital;
+          const currentUser = localStorage.getItem("username") || "";
+          if (hospital.nome !== currentUser) {
+            notifyHospitalCreated("Alguém", hospital.nome);
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "hospitais" },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ["hospitais"] });
+          const hospital = payload.new as Hospital;
+          const currentUser = localStorage.getItem("username") || "";
+          if (hospital.nome !== currentUser) {
+            notifyHospitalUpdated("Alguém", hospital.nome);
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "hospitais" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["hospitais"] });
+          notifyHospitalDeleted("Alguém", "um hospital");
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  return query;
 }
 
 export function useSearchHospitais(query: string) {
@@ -40,10 +87,6 @@ export function useCreateHospital() {
     mutationFn: (input: CreateHospitalInput) => hospitalService.create(input),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["hospitais"] });
-      notifyHospitalCreated(
-        localStorage.getItem("username") || "Usuário",
-        variables.nome
-      );
     },
   });
 }
@@ -56,10 +99,6 @@ export function useUpdateHospital() {
       hospitalService.update(id, input),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["hospitais"] });
-      notifyHospitalUpdated(
-        localStorage.getItem("username") || "Usuário",
-        variables.input.nome
-      );
     },
   });
 }
@@ -72,10 +111,6 @@ export function useDeleteHospital() {
       hospitalService.remove(input.id),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["hospitais"] });
-      notifyHospitalDeleted(
-        localStorage.getItem("username") || "Usuário",
-        variables.nome
-      );
     },
   });
 }
@@ -93,9 +128,35 @@ export function useEntregas() {
       .channel("entregas-changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "entregas" },
-        () => {
+        { event: "INSERT", schema: "public", table: "entregas" },
+        (payload) => {
           queryClient.invalidateQueries({ queryKey: ["entregas"] });
+          const entrega = payload.new as Entrega;
+          const currentUser = localStorage.getItem("username") || "";
+          if (entrega.created_by !== currentUser) {
+            notifyCreated(
+              entrega.created_by || "Alguém",
+              entrega.nome_hospital
+            );
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "entregas" },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ["entregas"] });
+          const entrega = payload.new as Entrega;
+          const entregaOld = payload.old as Entrega;
+          const currentUser = localStorage.getItem("username") || "";
+          if (entrega.created_by !== currentUser && entrega.status !== entregaOld.status) {
+            notifyStatusUpdated(
+              entrega.created_by || "Alguém",
+              entrega.nome_hospital,
+              entrega.status,
+              1
+            );
+          }
         }
       )
       .subscribe();
@@ -115,10 +176,6 @@ export function useCreateEntrega() {
     mutationFn: (input: CreateEntregaInput) => entregaService.create(input),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
-      notifyCreated(
-        variables.created_by || "Usuário",
-        variables.nome_hospital
-      );
     },
   });
 }
@@ -138,12 +195,6 @@ export function useUpdateEntregaStatus() {
     }) => entregaService.updateStatus(id, input),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
-      notifyStatusUpdated(
-        localStorage.getItem("username") || "Usuário",
-        variables.hospitalName || "Entrega",
-        variables.input.status,
-        1
-      );
     },
   });
 }
@@ -165,12 +216,6 @@ export function useUpdateStatusByHospital() {
     }) => entregaService.updateStatusByHospital(hospitalId, newStatus),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
-      notifyStatusUpdated(
-        localStorage.getItem("username") || "Usuário",
-        variables.hospitalName,
-        variables.newStatus,
-        variables.count
-      );
     },
   });
 }
