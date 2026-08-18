@@ -39,8 +39,9 @@ export function useHospitais() {
   });
 
   useEffect(() => {
+    const channelId = `hospitais-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel("hospitais-changes")
+      .channel(channelId)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "hospitais" },
@@ -49,7 +50,7 @@ export function useHospitais() {
           const hospital = payload.new as Hospital;
           const currentUser = getCurrentUsername();
           if (hospital.nome !== currentUser) {
-            notifyHospitalCreated("Alguém", hospital.nome);
+            notifyHospitalCreated("Alguem", hospital.nome);
           }
         }
       )
@@ -61,7 +62,7 @@ export function useHospitais() {
           const hospital = payload.new as Hospital;
           const currentUser = getCurrentUsername();
           if (hospital.nome !== currentUser) {
-            notifyHospitalUpdated("Alguém", hospital.nome);
+            notifyHospitalUpdated("Alguem", hospital.nome);
           }
         }
       )
@@ -70,10 +71,14 @@ export function useHospitais() {
         { event: "DELETE", schema: "public", table: "hospitais" },
         () => {
           queryClient.invalidateQueries({ queryKey: ["hospitais"] });
-          notifyHospitalDeleted("Alguém", "um hospital");
+          notifyHospitalDeleted("Alguem", "um hospital");
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log("Realtime hospitais conectado");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -135,8 +140,9 @@ export function useEntregas() {
   });
 
   useEffect(() => {
+    const channelId = `entregas-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel("entregas-changes")
+      .channel(channelId)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "entregas" },
@@ -146,7 +152,7 @@ export function useEntregas() {
           const currentUser = getCurrentUsername();
           if (entrega.created_by !== currentUser) {
             notifyCreated(
-              entrega.created_by || "Alguém",
+              entrega.created_by || "Alguem",
               entrega.nome_hospital
             );
           }
@@ -162,7 +168,7 @@ export function useEntregas() {
           const currentUser = getCurrentUsername();
           if (entrega.created_by !== currentUser && entrega.status !== entregaOld?.status) {
             notifyStatusUpdated(
-              entrega.created_by || "Alguém",
+              entrega.created_by || "Alguem",
               entrega.nome_hospital,
               entrega.status,
               1
@@ -170,7 +176,11 @@ export function useEntregas() {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log("Realtime entregas conectado");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

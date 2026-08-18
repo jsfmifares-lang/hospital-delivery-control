@@ -1,21 +1,8 @@
 import { toast } from "sonner";
 
-let audioCtx: AudioContext | null = null;
-
-function getAudioContext(): AudioContext {
-  if (!audioCtx) {
-    audioCtx = new AudioContext();
-  }
-  return audioCtx;
-}
-
 function playNotificationSound() {
   try {
-    const ctx = getAudioContext();
-
-    if (ctx.state === "suspended") {
-      ctx.resume();
-    }
+    const ctx = new AudioContext();
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -36,6 +23,8 @@ function playNotificationSound() {
 
     osc.start(now);
     osc.stop(now + 0.4);
+
+    setTimeout(() => ctx.close(), 500);
   } catch (e) {
     console.error("Erro ao tocar som:", e);
   }
@@ -57,14 +46,16 @@ function sendDesktopNotification(title: string, body: string) {
   }
 }
 
+let notifCounter = 0;
+
 function showWinNotification(title: string, body: string) {
   try {
+    notifCounter++;
     const n = new Notification(title, {
       body,
       icon: "/favicon.ico",
       requireInteraction: true,
       silent: false,
-      tag: `hd-${Date.now()}-${Math.random()}`,
     });
 
     n.onclick = () => {
@@ -72,7 +63,9 @@ function showWinNotification(title: string, body: string) {
       n.close();
     };
 
-    setTimeout(() => n.close(), 60000);
+    setTimeout(() => {
+      try { n.close(); } catch {}
+    }, 60000);
   } catch (e) {
     console.error("Erro na notificação:", e);
   }
@@ -96,7 +89,7 @@ export function notifyCreated(username: string, hospitalName: string) {
     },
   });
 
-  sendDesktopNotification("📦 Nova Entrega", msg);
+  sendDesktopNotification("Nova Entrega", msg);
 }
 
 export function notifyStatusUpdated(
@@ -123,7 +116,7 @@ export function notifyStatusUpdated(
     },
   });
 
-  sendDesktopNotification("🚚 Status Atualizado", msg);
+  sendDesktopNotification("Status Atualizado", msg);
 }
 
 export function notifyHospitalCreated(username: string, hospitalName: string) {
@@ -144,7 +137,7 @@ export function notifyHospitalCreated(username: string, hospitalName: string) {
     },
   });
 
-  sendDesktopNotification("🏥 Hospital Cadastrado", msg);
+  sendDesktopNotification("Hospital Cadastrado", msg);
 }
 
 export function notifyHospitalUpdated(username: string, hospitalName: string) {
@@ -165,13 +158,13 @@ export function notifyHospitalUpdated(username: string, hospitalName: string) {
     },
   });
 
-  sendDesktopNotification("🏥 Hospital Atualizado", msg);
+  sendDesktopNotification("Hospital Atualizado", msg);
 }
 
 export function notifyHospitalDeleted(username: string, hospitalName: string) {
   const msg = `${username} excluiu ${hospitalName}`;
 
-  toast.error("Hospital Excluído", {
+  toast.error("Hospital Excluido", {
     description: msg,
     style: {
       background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
@@ -186,7 +179,7 @@ export function notifyHospitalDeleted(username: string, hospitalName: string) {
     },
   });
 
-  sendDesktopNotification("❌ Hospital Excluído", msg);
+  sendDesktopNotification("Hospital Excluido", msg);
 }
 
 export function requestNotificationPermission() {
