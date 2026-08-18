@@ -171,17 +171,16 @@ export function useEntregas() {
           queryClient.invalidateQueries({ queryKey: ["entregas"] });
           const entrega = payload.new as Entrega;
           const entregaOld = payload.old as Entrega;
+          if (entrega.status === entregaOld?.status) return;
           const currentUser = getCurrentUsername();
           const pendingUser = pendingUpdaters.get(entrega.id);
           pendingUpdaters.delete(entrega.id);
-          const updater = pendingUser || entrega.created_by || "Alguem";
-          if (updater !== currentUser && entrega.status !== entregaOld?.status) {
-            notifyStatusUpdated(
-              updater,
-              entrega.nome_hospital,
-              entrega.status,
-              1
-            );
+          if (pendingUser) {
+            if (pendingUser !== currentUser) {
+              notifyStatusUpdated(pendingUser, entrega.nome_hospital, entrega.status, 1);
+            }
+          } else {
+            notifyStatusUpdated("Alguem", entrega.nome_hospital, entrega.status, 1);
           }
         }
       )
