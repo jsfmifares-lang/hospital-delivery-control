@@ -166,9 +166,10 @@ export function useEntregas() {
           const entrega = payload.new as Entrega;
           const entregaOld = payload.old as Entrega;
           const currentUser = getCurrentUsername();
-          if (entrega.created_by !== currentUser && entrega.status !== entregaOld?.status) {
+          const updater = (entrega as any).updated_by || entrega.created_by || "Alguem";
+          if (updater !== currentUser && entrega.status !== entregaOld?.status) {
             notifyStatusUpdated(
-              entrega.created_by || "Alguem",
+              updater,
               entrega.nome_hospital,
               entrega.status,
               1
@@ -213,7 +214,10 @@ export function useUpdateEntregaStatus() {
       id: string;
       input: UpdateEntregaInput;
       hospitalName?: string;
-    }) => entregaService.updateStatus(id, input),
+    }) => {
+      const username = getCurrentUsername();
+      return entregaService.updateStatus(id, input, username);
+    },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
     },
@@ -234,7 +238,10 @@ export function useUpdateStatusByHospital() {
       newStatus: string;
       hospitalName: string;
       count: number;
-    }) => entregaService.updateStatusByHospital(hospitalId, newStatus),
+    }) => {
+      const username = getCurrentUsername();
+      return entregaService.updateStatusByHospital(hospitalId, newStatus, username);
+    },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
     },
