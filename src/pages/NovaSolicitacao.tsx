@@ -23,6 +23,7 @@ export function NovaSolicitacao() {
   const [nomePaciente, setNomePaciente] = useState("");
   const [status, setStatus] = useState<StatusEntrega | "">("");
   const [observacao, setObservacao] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const { data: hospitals = [] } = useHospitais();
   const createEntrega = useCreateEntrega();
@@ -31,29 +32,28 @@ export function NovaSolicitacao() {
   const handleSelect = (hospital: Hospital) => {
     setSelectedHospital(hospital);
     setSearch(hospital.nome);
+    setErrorMsg("");
   };
 
   const handleSave = async () => {
     if (!selectedHospital) return;
+    setErrorMsg("");
 
     try {
-      const input: any = {
+      await createEntrega.mutateAsync({
         hospital_id: selectedHospital.id,
         nome_hospital: selectedHospital.nome,
         created_by: user?.username || "Desconhecido",
-      };
-      if (nomePaciente) input.nome_paciente = nomePaciente;
-      if (observacao) input.observacao = observacao;
-
-      await createEntrega.mutateAsync(input);
+      });
 
       setSearch("");
       setSelectedHospital(null);
       setNomePaciente("");
       setStatus("");
       setObservacao("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao salvar:", error);
+      setErrorMsg(error?.message || "Erro ao salvar. Tente novamente.");
     }
   };
 
@@ -78,8 +78,14 @@ export function NovaSolicitacao() {
           <CardTitle className="text-base">Dados da Entrega</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {errorMsg && (
+            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              {errorMsg}
+            </div>
+          )}
+
           <div className="space-y-2">
-            <Label>Hospital</Label>
+            <Label>Hospital *</Label>
             <Autocomplete
               hospitals={hospitals}
               value={search}
@@ -95,13 +101,13 @@ export function NovaSolicitacao() {
               id="paciente"
               value={nomePaciente}
               onChange={(e) => setNomePaciente(e.target.value.toUpperCase())}
-              placeholder="EX: JOAO DA SILVA"
+              placeholder="EX: JOÃO DA SILVA"
               style={{ textTransform: "uppercase" }}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Status *</Label>
+            <Label>Status</Label>
             <Select value={status} onValueChange={(v) => setStatus(v as StatusEntrega)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o status..." />
