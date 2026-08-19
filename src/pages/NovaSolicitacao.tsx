@@ -42,6 +42,8 @@ export function NovaSolicitacao() {
         nome_hospital: selectedHospital.nome,
         created_by: user?.username || "Desconhecido",
       };
+      if (nomePaciente) input.nome_paciente = nomePaciente;
+      if (observacao) input.observacao = observacao;
 
       await createEntrega.mutateAsync(input);
 
