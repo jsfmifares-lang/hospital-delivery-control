@@ -47,7 +47,7 @@ const iconPaths: Record<string, string> = {
   "Status Atualizado": `/icons/status-atualizado.svg?t=${Date.now()}`,
   "Hospital Cadastrado": `/icons/hospital-cadastrado.svg?t=${Date.now()}`,
   "Hospital Atualizado": `/icons/hospital-atualizado.svg?t=${Date.now()}`,
-  "Hospital Excluido": `/icons/hospital-excluido.svg?t=${Date.now()}`,
+  "Hospital Excluído": `/icons/hospital-excluido.svg?t=${Date.now()}`,
 };
 
 async function showWinNotification(title: string, body: string) {
@@ -136,7 +136,7 @@ export function notifyHospitalUpdated(username: string, hospitalName: string) {
 
 export function notifyHospitalDeleted(username: string, hospitalName: string) {
   const msg = `${username} excluiu ${hospitalName}`;
-  showWinNotification("Hospital Excluido", msg);
+  showWinNotification("Hospital Excluído", msg);
 }
 
 export function requestNotificationPermission() {

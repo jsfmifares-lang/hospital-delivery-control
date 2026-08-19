@@ -25,7 +25,7 @@ export function Sidebar({ className }: SidebarProps) {
   const { user, signOut } = useAuth();
 
   const navItems = [
-    { to: "/", label: "Nova Solicitacao", icon: Plus, show: user?.isAdmin },
+    { to: "/", label: "Nova Solicitação", icon: Plus, show: user?.isAdmin },
     { to: "/monitor", label: "Monitor de Entregas", icon: Monitor, show: true },
     { to: "/hospitais", label: "Hospitais", icon: Building2, show: user?.isAdmin },
   ].filter((item) => item.show);

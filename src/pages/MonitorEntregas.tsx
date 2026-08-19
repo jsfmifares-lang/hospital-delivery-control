@@ -165,7 +165,7 @@ export function MonitorEntregas() {
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Hospital</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Paciente</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Status</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Observacao</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Observação</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Inserido por</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3">Data/Hora</th>
                     </tr>
@@ -298,7 +298,7 @@ export function MonitorEntregas() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="observacao">Observacao</Label>
+                <Label htmlFor="observacao">Observação</Label>
                 <Input
                   id="observacao"
                   value={observacao}

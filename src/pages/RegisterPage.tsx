@@ -22,7 +22,7 @@ export function RegisterPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("As senhas nao conferem");
+      setError("As senhas não conferem");
       return;
     }
 
@@ -79,11 +79,11 @@ export function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="username">Nome de usuario</Label>
+              <Label htmlFor="username">Nome de usuário</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Escolha um nome de usuario"
+                placeholder="Escolha um nome de usuário"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -95,7 +95,7 @@ export function RegisterPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Minimo 4 caracteres"
+                placeholder="Mínimo 4 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -126,9 +126,9 @@ export function RegisterPage() {
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Ja tem conta?{" "}
+              Já tem conta?{" "}
               <Link to="/login" className="text-primary hover:underline font-medium">
-                Faca login
+                Faça login
               </Link>
             </p>
           </form>

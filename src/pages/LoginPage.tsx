@@ -44,7 +44,7 @@ export function LoginPage() {
           </div>
           <div>
             <CardTitle className="text-xl">Hospital Delivery Control</CardTitle>
-            <CardDescription>Faca login para acessar o sistema</CardDescription>
+            <CardDescription>Faça login para acessar o sistema</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -56,11 +56,11 @@ export function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="username">Nome de usuario</Label>
+              <Label htmlFor="username">Nome de usuário</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Seu nome de usuario"
+                placeholder="Seu nome de usuário"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -91,7 +91,7 @@ export function LoginPage() {
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Nao tem conta?{" "}
+              Não tem conta?{" "}
               <Link to="/cadastro" className="text-primary hover:underline font-medium">
                 Cadastre-se
               </Link>

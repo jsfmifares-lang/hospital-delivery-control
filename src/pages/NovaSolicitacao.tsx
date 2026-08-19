@@ -37,14 +37,16 @@ export function NovaSolicitacao() {
     if (!selectedHospital) return;
 
     try {
-      await createEntrega.mutateAsync({
+      const input: any = {
         hospital_id: selectedHospital.id,
         nome_hospital: selectedHospital.nome,
         nome_paciente: nomePaciente || undefined,
         status,
-        observacao: observacao || undefined,
         created_by: user?.username || "Desconhecido",
-      });
+      };
+      if (observacao) input.observacao = observacao;
+
+      await createEntrega.mutateAsync(input);
 
       setSearch("");
       setSelectedHospital(null);
@@ -64,7 +66,7 @@ export function NovaSolicitacao() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Nova Solicitacao
+            Nova Solicitação
           </h1>
           <p className="text-sm text-muted-foreground">
             Registre uma nova entrega para um hospital
@@ -113,7 +115,7 @@ export function NovaSolicitacao() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="observacao">Observacao (opcional)</Label>
+            <Label htmlFor="observacao">Observação (opcional)</Label>
             <Textarea
               id="observacao"
               value={observacao}
@@ -140,7 +142,7 @@ export function NovaSolicitacao() {
             className="w-full"
             size="lg"
           >
-            {createEntrega.isPending ? "Salvando..." : "Salvar Solicitacao"}
+            {createEntrega.isPending ? "Salvando..." : "Salvar Solicitação"}
           </Button>
         </CardContent>
       </Card>

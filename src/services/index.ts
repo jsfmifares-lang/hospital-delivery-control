@@ -87,7 +87,9 @@ export const entregaService = {
     input: UpdateEntregaInput,
     updatedBy?: string
   ): Promise<Entrega> {
-    const updateData: Record<string, unknown> = { status: input.status };
+    const updateData: Record<string, unknown> = {};
+    if (input.status) updateData.status = input.status;
+    if (input.observacao !== undefined) updateData.observacao = input.observacao || null;
     if (updatedBy) updateData.updated_by = updatedBy;
 
     const { data, error } = await supabase
