@@ -42,39 +42,19 @@ function playNotificationSound() {
   } catch (e) {}
 }
 
-function generateIcon(color: string): string {
-  const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
-  const ctx = canvas.getContext("2d")!;
-
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(32, 32, 30, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#fff";
-  ctx.font = "bold 32px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("✓", 32, 32);
-
-  return canvas.toDataURL("image/png");
-}
-
-const iconColors: Record<string, string> = {
-  "Nova Entrega": "#22c55e",
-  "Status Atualizado": "#3b82f6",
-  "Hospital Cadastrado": "#8b5cf6",
-  "Hospital Atualizado": "#f59e0b",
-  "Hospital Excluido": "#ef4444",
+const iconPaths: Record<string, string> = {
+  "Nova Entrega": "/icons/nova-entrega.svg",
+  "Status Atualizado": "/icons/status-atualizado.svg",
+  "Hospital Cadastrado": "/icons/hospital-cadastrado.svg",
+  "Hospital Atualizado": "/icons/hospital-atualizado.svg",
+  "Hospital Excluido": "/icons/hospital-excluido.svg",
 };
 
 async function showWinNotification(title: string, body: string) {
   playNotificationSound();
   console.log("Notificacao:", title, "| Permissao:", Notification.permission, "| Edge:", isEdge);
 
-  const icon = generateIcon(iconColors[title] || "#3b82f6");
+  const icon = iconPaths[title] || "/favicon.ico";
 
   if (!("Notification" in window)) {
     console.log("Notification API indisponivel, usando SW");

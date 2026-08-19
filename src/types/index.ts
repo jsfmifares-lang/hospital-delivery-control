@@ -15,6 +15,7 @@ export interface Entrega {
   created_at: string;
   updated_at: string;
   created_by: string | null;
+  updated_by: string | null;
 }
 
 export type StatusEntrega = "Pendente" | "Autorizado" | "Saiu para entrega";

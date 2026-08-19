@@ -180,7 +180,7 @@ export function MonitorEntregas() {
                         <td className="font-medium py-3 pr-4 whitespace-nowrap">{entrega.nome_hospital}</td>
                         <td className="text-sm text-muted-foreground py-3 pr-4 whitespace-nowrap">{entrega.nome_paciente || "—"}</td>
                         <td className="py-3 pr-4"><StatusBadge status={entrega.status} /></td>
-                        <td className="text-sm text-muted-foreground py-3 pr-4 whitespace-nowrap">{entrega.created_by || "—"}</td>
+                        <td className="text-sm text-muted-foreground py-3 pr-4 whitespace-nowrap">{entrega.updated_by || entrega.created_by || "—"}</td>
                         <td className="text-sm text-muted-foreground py-3 whitespace-nowrap">{formatDate(entrega.created_at)}</td>
                       </tr>
                     ))}
@@ -204,7 +204,7 @@ export function MonitorEntregas() {
                       <div className="min-w-0">
                         <p className="font-medium truncate">{entrega.nome_hospital}</p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {entrega.nome_paciente || "—"} · {entrega.created_by || "—"}
+                          {entrega.nome_paciente || "—"} · {entrega.updated_by || entrega.created_by || "—"}
                         </p>
                       </div>
                       <StatusBadge status={entrega.status} />
@@ -236,7 +236,7 @@ export function MonitorEntregas() {
                       </p>
                     )}
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Por: {entrega.created_by || "—"}</span>
+                      <span>Por: {entrega.updated_by || entrega.created_by || "—"}</span>
                       <span>{formatDate(entrega.created_at)}</span>
                     </div>
                   </div>
