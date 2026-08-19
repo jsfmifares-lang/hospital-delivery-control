@@ -50,34 +50,9 @@ export function useHospitais() {
       .channel(channelId)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "hospitais" },
-        (payload) => {
-          queryClient.invalidateQueries({ queryKey: ["hospitais"] });
-          const hospital = payload.new as Hospital;
-          const currentUser = getCurrentUsername();
-          if (hospital.nome !== currentUser) {
-            notifyHospitalCreated("Alguem", hospital.nome);
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "hospitais" },
-        (payload) => {
-          queryClient.invalidateQueries({ queryKey: ["hospitais"] });
-          const hospital = payload.new as Hospital;
-          const currentUser = getCurrentUsername();
-          if (hospital.nome !== currentUser) {
-            notifyHospitalUpdated("Alguem", hospital.nome);
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "hospitais" },
+        { event: "*", schema: "public", table: "hospitais" },
         () => {
           queryClient.invalidateQueries({ queryKey: ["hospitais"] });
-          notifyHospitalDeleted("Alguem", "um hospital");
         }
       )
       .subscribe((status) => {
@@ -175,12 +150,9 @@ export function useEntregas() {
           const currentUser = getCurrentUsername();
           const pendingUser = pendingUpdaters.get(entrega.id);
           pendingUpdaters.delete(entrega.id);
-          if (pendingUser) {
-            if (pendingUser !== currentUser) {
-              notifyStatusUpdated(pendingUser, entrega.nome_hospital, entrega.status, 1);
-            }
-          } else {
-            notifyStatusUpdated("Alguem", entrega.nome_hospital, entrega.status, 1);
+          const updater = pendingUser || (entrega as any).updated_by || "Alguem";
+          if (updater !== currentUser) {
+            notifyStatusUpdated(updater, entrega.nome_hospital, entrega.status, 1);
           }
         }
       )
@@ -221,8 +193,12 @@ export function useUpdateEntregaStatus() {
       id: string;
       input: UpdateEntregaInput;
       hospitalName?: string;
-    }) => entregaService.updateStatus(id, input),
-    onSuccess: (_data, variables) => {
+    }) => {
+      const username = getCurrentUsername();
+      trackUpdate(id, username);
+      return entregaService.updateStatus(id, input, username);
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
     },
   });
@@ -242,8 +218,11 @@ export function useUpdateStatusByHospital() {
       newStatus: string;
       hospitalName: string;
       count: number;
-    }) => entregaService.updateStatusByHospital(hospitalId, newStatus),
-    onSuccess: (_data, variables) => {
+    }) => {
+      const username = getCurrentUsername();
+      return entregaService.updateStatusByHospital(hospitalId, newStatus, username);
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["entregas"] });
     },
   });

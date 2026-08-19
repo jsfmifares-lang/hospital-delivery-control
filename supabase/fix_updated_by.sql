@@ -1,5 +1,4 @@
 -- EXECUTE ESTE SQL NO SUPABASE SQL EDITOR
--- Adiciona campo updated_by para rastrear quem atualizou
 
 DO $$
 BEGIN
