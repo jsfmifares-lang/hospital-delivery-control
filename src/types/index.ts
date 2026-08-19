@@ -23,6 +23,7 @@ export interface CreateEntregaInput {
   hospital_id: string;
   nome_hospital: string;
   nome_paciente?: string;
+  status?: StatusEntrega;
   created_by?: string;
 }
 

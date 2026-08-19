@@ -4,15 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Autocomplete } from "@/components/Autocomplete";
 import { useHospitais, useCreateEntrega } from "@/hooks/useQueries";
 import { useAuth } from "@/hooks/useAuth";
-import type { Hospital } from "@/types";
+import type { Hospital, StatusEntrega } from "@/types";
 
 export function NovaSolicitacao() {
   const [search, setSearch] = useState("");
   const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null);
   const [nomePaciente, setNomePaciente] = useState("");
+  const [status, setStatus] = useState<StatusEntrega>("Pendente");
 
   const { data: hospitals = [] } = useHospitais();
   const createEntrega = useCreateEntrega();
@@ -30,12 +38,14 @@ export function NovaSolicitacao() {
       hospital_id: selectedHospital.id,
       nome_hospital: selectedHospital.nome,
       nome_paciente: nomePaciente || undefined,
+      status,
       created_by: user?.username || "Desconhecido",
     });
 
     setSearch("");
     setSelectedHospital(null);
     setNomePaciente("");
+    setStatus("Pendente");
   };
 
   return (
@@ -81,17 +91,25 @@ export function NovaSolicitacao() {
             />
           </div>
 
+          <div className="space-y-2">
+            <Label>Status</Label>
+            <Select value={status} onValueChange={(v) => setStatus(v as StatusEntrega)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Pendente">Pendente</SelectItem>
+                <SelectItem value="Autorizado">Autorizado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {selectedHospital && (
             <div className="rounded-lg border bg-muted/50 p-4">
               <div className="flex items-center gap-3">
                 <Truck className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium">{selectedHospital.nome}</p>
-                  {selectedHospital.cidade && (
-                    <p className="text-sm text-muted-foreground">
-                      {selectedHospital.cidade}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
