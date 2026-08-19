@@ -40,11 +40,8 @@ export function NovaSolicitacao() {
       const input: any = {
         hospital_id: selectedHospital.id,
         nome_hospital: selectedHospital.nome,
-        nome_paciente: nomePaciente || undefined,
-        status,
         created_by: user?.username || "Desconhecido",
       };
-      if (observacao) input.observacao = observacao;
 
       await createEntrega.mutateAsync(input);
 
