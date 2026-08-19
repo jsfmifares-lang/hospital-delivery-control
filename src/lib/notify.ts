@@ -1,5 +1,3 @@
-import { toast } from "sonner";
-
 let swRegistration: ServiceWorkerRegistration | null = null;
 let audioCtx: AudioContext | null = null;
 const isEdge = navigator.userAgent.includes("Edg/");
@@ -44,29 +42,43 @@ function playNotificationSound() {
   } catch (e) {}
 }
 
-function showToast(title: string, msg: string, color: string, isError = false) {
-  if (isEdge) return;
-  const fn = isError ? toast.error : toast.success;
-  fn(title, {
-    description: msg,
-    style: {
-      background: color,
-      color: "#fff",
-      border: "none",
-      fontSize: "14px",
-    },
-    duration: Infinity,
-    action: { label: "Fechar", onClick: () => {} },
-  });
+function generateIcon(color: string): string {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext("2d")!;
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(32, 32, 30, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 32px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("✓", 32, 32);
+
+  return canvas.toDataURL("image/png");
 }
+
+const iconColors: Record<string, string> = {
+  "Nova Entrega": "#22c55e",
+  "Status Atualizado": "#3b82f6",
+  "Hospital Cadastrado": "#8b5cf6",
+  "Hospital Atualizado": "#f59e0b",
+  "Hospital Excluido": "#ef4444",
+};
 
 async function showWinNotification(title: string, body: string) {
   playNotificationSound();
   console.log("Notificacao:", title, "| Permissao:", Notification.permission, "| Edge:", isEdge);
 
+  const icon = generateIcon(iconColors[title] || "#3b82f6");
+
   if (!("Notification" in window)) {
     console.log("Notification API indisponivel, usando SW");
-    await tryViaSW(title, body);
+    await tryViaSW(title, body, icon);
     return;
   }
 
@@ -74,7 +86,7 @@ async function showWinNotification(title: string, body: string) {
     try {
       const n = new Notification(title, {
         body,
-        icon: "/favicon.ico",
+        icon,
         requireInteraction: true,
         silent: true,
       });
@@ -82,7 +94,7 @@ async function showWinNotification(title: string, body: string) {
       console.log("Notificacao criada com sucesso");
     } catch (e) {
       console.log("Erro ao criar notificacao, usando SW:", e);
-      await tryViaSW(title, body);
+      await tryViaSW(title, body, icon);
     }
   } else if (Notification.permission === "default") {
     console.log("Pedindo permissao...");
@@ -92,26 +104,26 @@ async function showWinNotification(title: string, body: string) {
       try {
         const n = new Notification(title, {
           body,
-          icon: "/favicon.ico",
+          icon,
           requireInteraction: true,
           silent: true,
         });
         n.onclick = () => { window.focus(); n.close(); };
       } catch (e) {
-        await tryViaSW(title, body);
+        await tryViaSW(title, body, icon);
       }
     }
   } else {
     console.log("Notificacoes bloqueadas, usando SW");
-    await tryViaSW(title, body);
+    await tryViaSW(title, body, icon);
   }
 }
 
-async function tryViaSW(title: string, body: string) {
+async function tryViaSW(title: string, body: string, icon: string) {
   try {
     const reg = await initServiceWorker();
     if (reg?.active) {
-      reg.active.postMessage({ type: "SHOW_NOTIFICATION", title, body, icon: "/favicon.ico" });
+      reg.active.postMessage({ type: "SHOW_NOTIFICATION", title, body, icon });
     }
   } catch (e) {}
 }
