@@ -118,7 +118,6 @@ async function tryViaSW(title: string, body: string) {
 
 export function notifyCreated(username: string, hospitalName: string) {
   const msg = `${username} criou nova entrega em ${hospitalName}`;
-  showToast("Nova Entrega", msg, "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)");
   showWinNotification("Nova Entrega", msg);
 }
 
@@ -130,25 +129,21 @@ export function notifyStatusUpdated(
 ) {
   const suffix = count > 1 ? ` (${count} entregas)` : "";
   const msg = `${username} atualizou ${hospitalName}${suffix} para "${newStatus}"`;
-  showToast("Status Atualizado", msg, "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)");
   showWinNotification("Status Atualizado", msg);
 }
 
 export function notifyHospitalCreated(username: string, hospitalName: string) {
   const msg = `${username} cadastrou ${hospitalName}`;
-  showToast("Hospital Cadastrado", msg, "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)");
   showWinNotification("Hospital Cadastrado", msg);
 }
 
 export function notifyHospitalUpdated(username: string, hospitalName: string) {
   const msg = `${username} atualizou ${hospitalName}`;
-  showToast("Hospital Atualizado", msg, "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)");
   showWinNotification("Hospital Atualizado", msg);
 }
 
 export function notifyHospitalDeleted(username: string, hospitalName: string) {
   const msg = `${username} excluiu ${hospitalName}`;
-  showToast("Hospital Excluido", msg, "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", true);
   showWinNotification("Hospital Excluido", msg);
 }
 
