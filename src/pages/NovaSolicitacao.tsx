@@ -137,7 +137,7 @@ export function NovaSolicitacao() {
 
           <Button
             onClick={handleSave}
-            disabled={!selectedHospital || !status || createEntrega.isPending}
+            disabled={!selectedHospital || createEntrega.isPending}
             className="w-full"
             size="lg"
           >
