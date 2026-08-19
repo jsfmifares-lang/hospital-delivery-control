@@ -20,7 +20,7 @@ export function NovaSolicitacao() {
   const [search, setSearch] = useState("");
   const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null);
   const [nomePaciente, setNomePaciente] = useState("");
-  const [status, setStatus] = useState<StatusEntrega>("Pendente");
+  const [status, setStatus] = useState<StatusEntrega | "">("");
 
   const { data: hospitals = [] } = useHospitais();
   const createEntrega = useCreateEntrega();
@@ -45,7 +45,7 @@ export function NovaSolicitacao() {
     setSearch("");
     setSelectedHospital(null);
     setNomePaciente("");
-    setStatus("Pendente");
+    setStatus("");
   };
 
   return (
@@ -92,10 +92,10 @@ export function NovaSolicitacao() {
           </div>
 
           <div className="space-y-2">
-            <Label>Status</Label>
+            <Label>Status *</Label>
             <Select value={status} onValueChange={(v) => setStatus(v as StatusEntrega)}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Selecione o status..." />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Pendente">Pendente</SelectItem>
@@ -117,7 +117,7 @@ export function NovaSolicitacao() {
 
           <Button
             onClick={handleSave}
-            disabled={!selectedHospital || createEntrega.isPending}
+            disabled={!selectedHospital || !status || createEntrega.isPending}
             className="w-full"
             size="lg"
           >
