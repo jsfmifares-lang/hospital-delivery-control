@@ -43,11 +43,11 @@ function playNotificationSound() {
 }
 
 const iconPaths: Record<string, string> = {
-  "Nova Entrega": "/icons/nova-entrega.svg",
-  "Status Atualizado": "/icons/status-atualizado.svg",
-  "Hospital Cadastrado": "/icons/hospital-cadastrado.svg",
-  "Hospital Atualizado": "/icons/hospital-atualizado.svg",
-  "Hospital Excluido": "/icons/hospital-excluido.svg",
+  "Nova Entrega": `/icons/nova-entrega.svg?t=${Date.now()}`,
+  "Status Atualizado": `/icons/status-atualizado.svg?t=${Date.now()}`,
+  "Hospital Cadastrado": `/icons/hospital-cadastrado.svg?t=${Date.now()}`,
+  "Hospital Atualizado": `/icons/hospital-atualizado.svg?t=${Date.now()}`,
+  "Hospital Excluido": `/icons/hospital-excluido.svg?t=${Date.now()}`,
 };
 
 async function showWinNotification(title: string, body: string) {

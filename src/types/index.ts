@@ -12,6 +12,7 @@ export interface Entrega {
   nome_hospital: string;
   nome_paciente: string | null;
   status: "Pendente" | "Autorizado" | "Saiu para entrega";
+  observacao: string | null;
   created_at: string;
   updated_at: string;
   created_by: string | null;
@@ -25,11 +26,13 @@ export interface CreateEntregaInput {
   nome_hospital: string;
   nome_paciente?: string;
   status?: StatusEntrega;
+  observacao?: string;
   created_by?: string;
 }
 
 export interface UpdateEntregaInput {
-  status: StatusEntrega;
+  status?: StatusEntrega;
+  observacao?: string;
 }
 
 export interface CreateHospitalInput {

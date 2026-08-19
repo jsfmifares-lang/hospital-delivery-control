@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
@@ -31,6 +32,7 @@ export function MonitorEntregas() {
   const [selectedEntrega, setSelectedEntrega] = useState<Entrega | null>(null);
   const [newStatus, setNewStatus] = useState<StatusEntrega>("Pendente");
   const [updateAllPending, setUpdateAllPending] = useState(false);
+  const [observacao, setObservacao] = useState("");
 
   const { data: entregas = [], isLoading, refetch } = useEntregas();
   const updateStatus = useUpdateEntregaStatus();
@@ -43,6 +45,7 @@ export function MonitorEntregas() {
     if (!canEdit) return;
     setSelectedEntrega(entrega);
     setNewStatus(entrega.status);
+    setObservacao(entrega.observacao || "");
     setUpdateAllPending(false);
   };
 
@@ -59,7 +62,7 @@ export function MonitorEntregas() {
     } else {
       await updateStatus.mutateAsync({
         id: selectedEntrega.id,
-        input: { status: newStatus },
+        input: { status: newStatus, observacao },
         hospitalName: selectedEntrega.nome_hospital,
       });
     }
@@ -162,6 +165,7 @@ export function MonitorEntregas() {
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Hospital</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Paciente</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Status</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Observacao</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Inserido por</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3">Data/Hora</th>
                     </tr>
@@ -180,6 +184,7 @@ export function MonitorEntregas() {
                         <td className="font-medium py-3 pr-4 whitespace-nowrap">{entrega.nome_hospital}</td>
                         <td className="text-sm text-muted-foreground py-3 pr-4 whitespace-nowrap">{entrega.nome_paciente || "—"}</td>
                         <td className="py-3 pr-4"><StatusBadge status={entrega.status} /></td>
+                        <td className="text-sm text-muted-foreground py-3 pr-4 max-w-[200px] truncate">{entrega.observacao || "—"}</td>
                         <td className="text-sm text-muted-foreground py-3 pr-4 whitespace-nowrap">{entrega.updated_by || entrega.created_by || "—"}</td>
                         <td className="text-sm text-muted-foreground py-3 whitespace-nowrap">{formatDate(entrega.created_at)}</td>
                       </tr>
@@ -206,6 +211,11 @@ export function MonitorEntregas() {
                         <p className="text-xs text-muted-foreground truncate">
                           {entrega.nome_paciente || "—"} · {entrega.updated_by || entrega.created_by || "—"}
                         </p>
+                        {entrega.observacao && (
+                          <p className="text-xs text-muted-foreground truncate italic">
+                            Obs: {entrega.observacao}
+                          </p>
+                        )}
                       </div>
                       <StatusBadge status={entrega.status} />
                       <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(entrega.created_at)}</span>
@@ -233,6 +243,11 @@ export function MonitorEntregas() {
                     {entrega.nome_paciente && (
                       <p className="text-sm text-muted-foreground mb-1">
                         Paciente: {entrega.nome_paciente}
+                      </p>
+                    )}
+                    {entrega.observacao && (
+                      <p className="text-sm text-muted-foreground mb-1 italic">
+                        Obs: {entrega.observacao}
                       </p>
                     )}
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -280,6 +295,16 @@ export function MonitorEntregas() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="observacao">Observacao</Label>
+                <Input
+                  id="observacao"
+                  value={observacao}
+                  onChange={(e) => setObservacao(e.target.value.toUpperCase())}
+                  placeholder="EX: URGENTE, ENTREGAR ANTES DAS 14H"
+                />
               </div>
 
               {pendingCount > 1 && (

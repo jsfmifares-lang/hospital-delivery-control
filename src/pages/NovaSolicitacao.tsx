@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,6 +22,7 @@ export function NovaSolicitacao() {
   const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null);
   const [nomePaciente, setNomePaciente] = useState("");
   const [status, setStatus] = useState<StatusEntrega | "">("");
+  const [observacao, setObservacao] = useState("");
 
   const { data: hospitals = [] } = useHospitais();
   const createEntrega = useCreateEntrega();
@@ -40,6 +42,7 @@ export function NovaSolicitacao() {
         nome_hospital: selectedHospital.nome,
         nome_paciente: nomePaciente || undefined,
         status,
+        observacao: observacao || undefined,
         created_by: user?.username || "Desconhecido",
       });
 
@@ -47,6 +50,7 @@ export function NovaSolicitacao() {
       setSelectedHospital(null);
       setNomePaciente("");
       setStatus("");
+      setObservacao("");
     } catch (error) {
       console.error("Erro ao salvar:", error);
     }
@@ -106,6 +110,17 @@ export function NovaSolicitacao() {
                 <SelectItem value="Autorizado">Autorizado</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="observacao">Observacao (opcional)</Label>
+            <Textarea
+              id="observacao"
+              value={observacao}
+              onChange={(e) => setObservacao(e.target.value.toUpperCase())}
+              placeholder="EX: PEDIDO URGENTE, ENTREGAR ANTES DAS 14H"
+              rows={3}
+            />
           </div>
 
           {selectedHospital && (
