@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Monitor, RefreshCw, Bell } from "lucide-react";
+import { Monitor, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -25,7 +25,6 @@ import {
   useUpdateStatusByHospital,
 } from "@/hooks/useQueries";
 import { useAuth } from "@/hooks/useAuth";
-import { requestNotificationPermission } from "@/lib/notify";
 import type { Entrega, StatusEntrega } from "@/types";
 
 export function MonitorEntregas() {
@@ -120,24 +119,7 @@ export function MonitorEntregas() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              requestNotificationPermission();
-              if (Notification.permission === "granted") {
-                new Notification("Teste de Notificacao", {
-                  body: "Se voce viu isto, as notificacoes Windows estao funcionando!",
-                  icon: "/favicon.ico",
-                  requireInteraction: true,
-                  silent: false,
-                });
-              }
-            }}
-          >
-            <Bell className="mr-1 sm:mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Testar Notificacao</span>
-          </Button>
+          <span className="text-sm text-muted-foreground">{user?.username}</span>
           <Button
             variant="outline"
             size="sm"
