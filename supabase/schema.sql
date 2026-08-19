@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS entregas (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   hospital_id UUID NOT NULL REFERENCES hospitais(id) ON DELETE CASCADE,
   nome_hospital TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'Pendente' CHECK (status IN ('Pendente', 'Saiu para entrega')),
+  status TEXT NOT NULL DEFAULT 'Pendente' CHECK (status IN ('Pendente', 'Autorizado', 'Saiu para entrega')),
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL,
   created_by TEXT

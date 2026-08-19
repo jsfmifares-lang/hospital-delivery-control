@@ -274,6 +274,7 @@ export function MonitorEntregas() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Pendente">Pendente</SelectItem>
+                    <SelectItem value="Autorizado">Autorizado</SelectItem>
                     <SelectItem value="Saiu para entrega">
                       Saiu para entrega
                     </SelectItem>
@@ -281,7 +282,7 @@ export function MonitorEntregas() {
                 </Select>
               </div>
 
-              {newStatus !== "Pendente" && pendingCount > 1 && (
+              {pendingCount > 1 && (
                 <div className="flex items-center gap-2 rounded-lg border p-3 bg-muted/50">
                   <input
                     type="checkbox"

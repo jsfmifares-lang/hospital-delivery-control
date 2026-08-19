@@ -14,6 +14,10 @@ const statusConfig: Record<
     label: "Pendente",
     className: "bg-amber-100 text-amber-800 border-amber-200",
   },
+  Autorizado: {
+    label: "Autorizado",
+    className: "bg-blue-100 text-blue-800 border-blue-200",
+  },
   "Saiu para entrega": {
     label: "Saiu para entrega",
     className: "bg-emerald-100 text-emerald-800 border-emerald-200",

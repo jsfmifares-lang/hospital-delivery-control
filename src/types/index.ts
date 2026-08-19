@@ -11,13 +11,13 @@ export interface Entrega {
   hospital_id: string;
   nome_hospital: string;
   nome_paciente: string | null;
-  status: "Pendente" | "Saiu para entrega";
+  status: "Pendente" | "Autorizado" | "Saiu para entrega";
   created_at: string;
   updated_at: string;
   created_by: string | null;
 }
 
-export type StatusEntrega = "Pendente" | "Saiu para entrega";
+export type StatusEntrega = "Pendente" | "Autorizado" | "Saiu para entrega";
 
 export interface CreateEntregaInput {
   hospital_id: string;
