@@ -34,18 +34,22 @@ export function NovaSolicitacao() {
   const handleSave = async () => {
     if (!selectedHospital) return;
 
-    await createEntrega.mutateAsync({
-      hospital_id: selectedHospital.id,
-      nome_hospital: selectedHospital.nome,
-      nome_paciente: nomePaciente || undefined,
-      status,
-      created_by: user?.username || "Desconhecido",
-    });
+    try {
+      await createEntrega.mutateAsync({
+        hospital_id: selectedHospital.id,
+        nome_hospital: selectedHospital.nome,
+        nome_paciente: nomePaciente || undefined,
+        status,
+        created_by: user?.username || "Desconhecido",
+      });
 
-    setSearch("");
-    setSelectedHospital(null);
-    setNomePaciente("");
-    setStatus("");
+      setSearch("");
+      setSelectedHospital(null);
+      setNomePaciente("");
+      setStatus("");
+    } catch (error) {
+      console.error("Erro ao salvar:", error);
+    }
   };
 
   return (
