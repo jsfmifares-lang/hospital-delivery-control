@@ -8,6 +8,7 @@ export interface AuthUser {
   username: string;
   isAdmin: boolean;
   isAnderson: boolean;
+  canCreate: boolean;
 }
 
 interface AuthContextType {
@@ -25,6 +26,7 @@ function checkRoles(username: string) {
   return {
     isAdmin: lower.includes("adm"),
     isAnderson: lower.includes("anderson"),
+    canCreate: true,
   };
 }
 

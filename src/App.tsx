@@ -55,10 +55,10 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function AdminRoute({ children }: { children: React.ReactNode }) {
+function CreateRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
-  if (!user?.isAdmin) {
+  if (!user?.canCreate) {
     return <Navigate to="/monitor" replace />;
   }
 
@@ -94,9 +94,9 @@ function AppRoutes() {
         <Route
           path="/"
           element={
-            <AdminRoute>
+            <CreateRoute>
               <NovaSolicitacao />
-            </AdminRoute>
+            </CreateRoute>
           }
         />
         <Route path="/monitor" element={<MonitorEntregas />} />
