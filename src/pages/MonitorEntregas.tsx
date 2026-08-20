@@ -159,15 +159,15 @@ export function MonitorEntregas() {
             <>
               {/* Desktop Table */}
               <div className="hidden lg:block">
-                <table className="w-full min-w-[700px]">
+                <table className="w-full table-fixed">
                   <thead>
                     <tr className="border-b pb-3 mb-2">
-                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Hospital</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Paciente</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Status</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Observação</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4">Atualizado por</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3">Data/Hora</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[20%]">Hospital</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[18%]">Paciente</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[12%]">Status</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[22%]">Observação</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[14%]">Atualizado por</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 w-[14%]">Data/Hora</th>
                     </tr>
                   </thead>
                   <tbody className="space-y-1">
@@ -181,12 +181,12 @@ export function MonitorEntregas() {
                         }`}
                         onClick={() => handleRowClick(entrega)}
                       >
-                        <td className="font-medium py-3 pr-4 whitespace-nowrap">{entrega.nome_hospital}</td>
-                        <td className="text-sm text-muted-foreground py-3 pr-4 whitespace-nowrap">{entrega.nome_paciente || "—"}</td>
+                        <td className="font-medium py-3 pr-4 truncate">{entrega.nome_hospital}</td>
+                        <td className="text-sm text-muted-foreground py-3 pr-4 truncate">{entrega.nome_paciente || "—"}</td>
                         <td className="py-3 pr-4"><StatusBadge status={entrega.status} /></td>
-                        <td className="text-sm text-muted-foreground py-3 pr-4 max-w-[200px] truncate">{entrega.observacao || "—"}</td>
-                        <td className="text-sm text-muted-foreground py-3 pr-4 whitespace-nowrap">{entrega.updated_by || entrega.created_by || "—"}</td>
-                        <td className="text-sm text-muted-foreground py-3 whitespace-nowrap">{formatDate(entrega.created_at)}</td>
+                        <td className="text-sm text-muted-foreground py-3 pr-4 truncate">{entrega.observacao || "—"}</td>
+                        <td className="text-sm text-muted-foreground py-3 pr-4 truncate">{entrega.updated_by || entrega.created_by || "—"}</td>
+                        <td className="text-sm text-muted-foreground py-3 truncate">{formatDate(entrega.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>
