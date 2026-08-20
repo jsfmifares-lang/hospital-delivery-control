@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Monitor, RefreshCw } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Monitor, RefreshCw, Search, X, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -34,12 +34,40 @@ export function MonitorEntregas() {
   const [updateAllPending, setUpdateAllPending] = useState(false);
   const [observacao, setObservacao] = useState("");
 
+  const [searchHospital, setSearchHospital] = useState("");
+  const [searchDate, setSearchDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [showAll, setShowAll] = useState(false);
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false);
+  const autocompleteRef = useRef<HTMLDivElement>(null);
+
   const { data: entregas = [], isLoading, refetch } = useEntregas();
   const updateStatus = useUpdateEntregaStatus();
   const updateAllByHospital = useUpdateStatusByHospital();
   const { user } = useAuth();
 
   const canEdit = user?.isAdmin || user?.isAnderson;
+
+  const hospitalNames = useMemo(() => {
+    const names = new Set(entregas.map((e) => e.nome_hospital));
+    return [...names].sort();
+  }, [entregas]);
+
+  const filteredHospitalNames = useMemo(() => {
+    if (!searchHospital) return hospitalNames;
+    return hospitalNames.filter((name) =>
+      name.toLowerCase().includes(searchHospital.toLowerCase())
+    );
+  }, [hospitalNames, searchHospital]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (autocompleteRef.current && !autocompleteRef.current.contains(e.target as Node)) {
+        setAutocompleteOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleRowClick = (entrega: Entrega) => {
     if (!canEdit) return;
@@ -97,12 +125,29 @@ export function MonitorEntregas() {
     "Saiu para entrega": 2,
   };
 
-  const sortedEntregas = [...entregas].sort((a, b) => {
-    const orderA = statusOrder[a.status] ?? 3;
-    const orderB = statusOrder[b.status] ?? 3;
-    if (orderA !== orderB) return orderA - orderB;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+  const filteredEntregas = useMemo(() => {
+    let result = [...entregas];
+
+    if (!showAll) {
+      result = result.filter((e) => {
+        const d = new Date(e.created_at);
+        return d.toISOString().split("T")[0] === searchDate;
+      });
+    }
+
+    if (searchHospital) {
+      result = result.filter((e) =>
+        e.nome_hospital.toLowerCase().includes(searchHospital.toLowerCase())
+      );
+    }
+
+    return result.sort((a, b) => {
+      const orderA = statusOrder[a.status] ?? 3;
+      const orderB = statusOrder[b.status] ?? 3;
+      if (orderA !== orderB) return orderA - orderB;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [entregas, showAll, searchDate, searchHospital]);
 
   const pendingCount = selectedEntrega
     ? entregas.filter(
@@ -146,20 +191,71 @@ export function MonitorEntregas() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <CardTitle className="text-base">Entregas</CardTitle>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-64" ref={autocompleteRef}>
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar hospital..."
+                  value={searchHospital}
+                  onChange={(e) => {
+                    setSearchHospital(e.target.value);
+                    setAutocompleteOpen(true);
+                  }}
+                  onFocus={() => setAutocompleteOpen(true)}
+                  className="pl-8 h-9"
+                />
+                {autocompleteOpen && filteredHospitalNames.length > 0 && (
+                  <div className="absolute z-50 top-full mt-1 w-full rounded-md border bg-popover shadow-md max-h-48 overflow-auto">
+                    {filteredHospitalNames.map((name) => (
+                      <button
+                        key={name}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                        onClick={() => {
+                          setSearchHospital(name);
+                          setAutocompleteOpen(false);
+                        }}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    type="date"
+                    value={searchDate}
+                    onChange={(e) => setSearchDate(e.target.value)}
+                    disabled={showAll}
+                    className="pl-8 h-9 w-full sm:w-40"
+                  />
+                </div>
+                <Button
+                  variant={showAll ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowAll(!showAll)}
+                  className="h-9 whitespace-nowrap"
+                >
+                  {showAll ? "Hoje" : "Todas"}
+                </Button>
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading && sortedEntregas.length === 0 ? (
+          {isLoading && filteredEntregas.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : sortedEntregas.length === 0 ? (
+          ) : filteredEntregas.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Monitor className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <p className="text-muted-foreground">
-                Nenhuma entrega registrada ainda
+                Nenhuma entrega encontrada para este filtro
               </p>
             </div>
           ) : (
@@ -178,7 +274,7 @@ export function MonitorEntregas() {
                     </tr>
                   </thead>
                   <tbody className="space-y-1">
-                    {sortedEntregas.map((entrega) => (
+                    {filteredEntregas.map((entrega) => (
                       <tr
                         key={entrega.id}
                         className={`rounded-lg transition-colors ${
@@ -203,7 +299,7 @@ export function MonitorEntregas() {
               {/* Tablet - 3 columns */}
               <div className="hidden md:block lg:hidden">
                 <div className="space-y-1">
-                  {sortedEntregas.map((entrega) => (
+                  {filteredEntregas.map((entrega) => (
                     <div
                       key={entrega.id}
                       className={`grid grid-cols-[1fr_auto_auto] gap-3 items-center rounded-lg p-3 transition-colors ${
@@ -233,7 +329,7 @@ export function MonitorEntregas() {
 
               {/* Mobile Cards */}
               <div className="md:hidden space-y-3">
-                {sortedEntregas.map((entrega) => (
+                {filteredEntregas.map((entrega) => (
                   <div
                     key={entrega.id}
                     className={`rounded-lg border p-4 transition-colors ${
