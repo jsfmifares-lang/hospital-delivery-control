@@ -91,9 +91,16 @@ export function MonitorEntregas() {
     });
   };
 
+  const statusOrder: Record<string, number> = {
+    "Pendente": 0,
+    "Autorizado": 1,
+    "Saiu para entrega": 2,
+  };
+
   const sortedEntregas = [...entregas].sort((a, b) => {
-    if (a.status === "Pendente" && b.status !== "Pendente") return -1;
-    if (a.status !== "Pendente" && b.status === "Pendente") return 1;
+    const orderA = statusOrder[a.status] ?? 3;
+    const orderB = statusOrder[b.status] ?? 3;
+    if (orderA !== orderB) return orderA - orderB;
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
 
