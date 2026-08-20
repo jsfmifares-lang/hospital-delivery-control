@@ -164,8 +164,8 @@ export function MonitorEntregas() {
                     <tr className="border-b pb-3 mb-2">
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[28%]">Hospital</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[16%]">Paciente</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[10%]">Status</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[16%]">Observação</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[14%]">Status</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[12%]">Observação</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 pr-4 w-[14%]">Atualizado por</th>
                       <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider pb-3 w-[16%]">Data/Hora</th>
                     </tr>
@@ -183,7 +183,7 @@ export function MonitorEntregas() {
                       >
                         <td className="font-medium py-3 pr-4 break-words">{entrega.nome_hospital}</td>
                         <td className="text-sm text-muted-foreground py-3 pr-4 truncate">{entrega.nome_paciente || "—"}</td>
-                        <td className="py-3 pr-4"><StatusBadge status={entrega.status} /></td>
+                        <td className="py-3 pr-4 whitespace-nowrap"><StatusBadge status={entrega.status} /></td>
                         <td className="text-sm text-muted-foreground py-3 pr-4 break-words">{entrega.observacao || "—"}</td>
                         <td className="text-sm text-muted-foreground py-3 pr-4 truncate">{entrega.updated_by || entrega.created_by || "—"}</td>
                         <td className="text-sm text-muted-foreground py-3 truncate">{formatDate(entrega.created_at)}</td>
