@@ -296,9 +296,12 @@ export function MonitorEntregas() {
                   </SelectTrigger>
                   <SelectContent>
                     {user?.isAnderson ? (
-                      <SelectItem value="Saiu para entrega">
-                        Saiu para entrega
-                      </SelectItem>
+                      <>
+                        <SelectItem value="Pendente">Pendente</SelectItem>
+                        <SelectItem value="Saiu para entrega">
+                          Saiu para entrega
+                        </SelectItem>
+                      </>
                     ) : (
                       <>
                         <SelectItem value="Pendente">Pendente</SelectItem>
