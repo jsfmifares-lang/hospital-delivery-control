@@ -44,6 +44,7 @@ export function NovaSolicitacao() {
         hospital_id: selectedHospital.id,
         nome_hospital: selectedHospital.nome,
         nome_paciente: nomePaciente || undefined,
+        observacao: observacao || undefined,
         created_by: user?.username || "Desconhecido",
       });
 
