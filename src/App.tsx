@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppLayout } from "@/layouts/AppLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
@@ -117,22 +118,24 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-          <Toaster
-            position="top-right"
-            richColors
-            closeButton
-            duration={4000}
-            toastOptions={{
-              style: {
-                background: "hsl(var(--background))",
-                border: "1px solid hsl(var(--border))",
-                color: "hsl(var(--foreground))",
-              },
-            }}
-          />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <AppRoutes />
+            <Toaster
+              position="top-right"
+              richColors
+              closeButton
+              duration={4000}
+              toastOptions={{
+                style: {
+                  background: "hsl(var(--background))",
+                  border: "1px solid hsl(var(--border))",
+                  color: "hsl(var(--foreground))",
+                },
+              }}
+            />
+          </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

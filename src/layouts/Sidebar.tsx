@@ -9,9 +9,12 @@ import {
   Truck,
   LogOut,
   ChevronRight,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 
 interface SidebarProps {
@@ -23,6 +26,7 @@ export function Sidebar({ className }: SidebarProps) {
   const [desktopOpen, setDesktopOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const navItems = [
     { to: "/", label: "Nova Solicitação", icon: Plus, show: user?.isAdmin },
@@ -103,7 +107,14 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="border-t pt-3 mt-3">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-muted-foreground truncate">{user?.username}</span>
-            <div className="flex gap-1">
+            <div className="flex gap-1 items-center">
+              <button
+                onClick={toggleTheme}
+                className="p-1 hover:bg-muted rounded-md transition-colors"
+                title={theme === "light" ? "Tema escuro" : "Tema claro"}
+              >
+                {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </button>
               {user?.isAdmin && (
                 <span className="text-[10px] font-medium uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded">
                   Admin
@@ -182,7 +193,14 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="border-t p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-muted-foreground truncate max-w-[140px]">{user?.username}</span>
-            <div className="flex gap-1">
+            <div className="flex gap-1 items-center">
+              <button
+                onClick={toggleTheme}
+                className="p-1 hover:bg-muted rounded-md transition-colors"
+                title={theme === "light" ? "Tema escuro" : "Tema claro"}
+              >
+                {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </button>
               {user?.isAdmin && (
                 <span className="text-[10px] font-medium uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded">
                   Admin
