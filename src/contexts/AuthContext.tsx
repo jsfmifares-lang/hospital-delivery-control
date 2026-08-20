@@ -23,9 +23,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function checkRoles(username: string) {
   const lower = username.toLowerCase();
+  const isAnderson = lower.includes("anderson");
   return {
-    isAdmin: lower.includes("adm"),
-    isAnderson: lower.includes("anderson"),
+    isAdmin: !isAnderson,
+    isAnderson,
     canCreate: true,
   };
 }
