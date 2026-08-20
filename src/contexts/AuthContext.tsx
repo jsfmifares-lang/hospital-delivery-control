@@ -24,7 +24,7 @@ function checkRoles(username: string) {
   const lower = username.toLowerCase();
   return {
     isAdmin: lower.includes("adm"),
-    isAnderson: lower === "anderson",
+    isAnderson: lower.includes("anderson"),
   };
 }
 
