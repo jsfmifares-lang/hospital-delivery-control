@@ -1,3 +1,8 @@
 [build]
+  command = "echo done"
   publish = "."
-  command = "echo 'Static'"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
