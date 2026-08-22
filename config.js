@@ -1,0 +1,1 @@
+window.GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxUudSKjnd9is6UYL08ReDIkm_X6WPhDTfaNxHGqI4VBiMv99a8x5rjJzqdi9lLgMbo/exec';
